@@ -51,6 +51,8 @@ jobs:
           context: ./frontend
           file: ./frontend/Dockerfile
           push: true
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
           tags: |
             ghcr.io/${{ env.OWNER_LC }}/resumefriendly-ai-frontend:latest
             ghcr.io/${{ env.OWNER_LC }}/resumefriendly-ai-frontend:${{ github.sha }}

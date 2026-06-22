@@ -11,7 +11,7 @@ class Settings:
     # Database
     DATABASE_URL: str = os.getenv(
         "DATABASE_URL", 
-        "postgresql://resumefriendly_admin:SuperSecurePassword2026@localhost:5432/resumefriendly_db"
+        "postgresql://postgres:Pavan%40123@localhost:5432/resumefriendly_db"
     )
     
     # JWT Security

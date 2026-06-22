@@ -30,7 +30,7 @@ export const api = {
     return response.json();
   },
 
-  async login(credentials: { email: string; password: str }) {
+  async login(credentials: { email: string; password: string }) {
     // OAuth2PasswordRequestForm expects form-urlencoded body
     const formData = new URLSearchParams();
     formData.append("username", credentials.email);

@@ -8,7 +8,7 @@ import { User } from "@/types";
 interface AuthContextType {
   user: User | null;
   loading: boolean;
-  login: (email: string; password: str) => Promise<void>;
+  login: (email: string, password: string) => Promise<void>;
   register: (payload: any) => Promise<void>;
   logout: () => void;
 }
@@ -42,7 +42,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     initAuth();
   }, []);
 
-  const login = async (email: string; password: str) => {
+  const login = async (email: string, password: string) => {
     setLoading(true);
     try {
       const result = await api.login({ email, password });

@@ -1,0 +1,29 @@
+{
+  "name": "resumefriendly-frontend",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "next": "^15.0.3",
+    "react": "^19.0.0-rc-66a30be9-20241107",
+    "react-dom": "^19.0.0-rc-66a30be9-20241107",
+    "framer-motion": "^11.11.11",
+    "lucide-react": "^0.456.0",
+    "clsx": "^2.1.1",
+    "tailwind-merge": "^2.5.4"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.9",
+    "@types/react": "^18.3.3",
+    "@types/react-dom": "^18.3.0",
+    "typescript": "^5.5.2",
+    "tailwindcss": "^3.4.15",
+    "postcss": "^8.4.49",
+    "autoprefixer": "^10.4.20"
+  }
+}

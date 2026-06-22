@@ -56,3 +56,24 @@ Spin up all containers (Next.js, FastAPI, PostgreSQL, ChromaDB) with a single co
 3. **Access Services**:
    - Web Frontend: [http://localhost:3000](http://localhost:3000)
    - API Documentation (Swagger): [http://localhost:8000/docs](http://localhost:8000/docs)
+
+---
+
+## 🔁 CI/CD Pipeline (GitHub Actions)
+
+The repository now includes two workflows under `.github/workflows/`:
+
+- **CI (`ci.yml`)**
+  - Triggered on pull requests and pushes to `main`, `master`, and `develop`.
+  - Backend job installs Python dependencies and validates the app with `python -m compileall app`.
+  - Frontend job installs Node dependencies and runs `npm run build`.
+
+- **CD (`cd.yml`)**
+  - Triggered on pushes to `main` and manual `workflow_dispatch`.
+  - Builds Docker images for backend and frontend.
+  - Publishes both images to GitHub Container Registry (`ghcr.io`).
+  - Optionally calls a deployment webhook if `DEPLOY_WEBHOOK_URL` is configured.
+
+### Optional repository secrets
+
+- `DEPLOY_WEBHOOK_URL` (optional): endpoint invoked after successful image publishing.

@@ -1,4 +1,4 @@
-# ResumeFriendly AI (ResumeFlow AI)
+# ResumeFriendly AI
 
 ResumeFriendly AI is a production-ready, AI-powered hiring intelligence and Applicant Tracking System (ATS) optimization platform. It features comprehensive candidate and recruiter interfaces.
 

@@ -1,14 +1,45 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { useAuth } from "@/hooks/useAuth";
-import { useRouter, usePathname } from "next/navigation";
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { 
   Brain, FileText, CheckSquare, Settings, LogOut, Menu, X, 
   Bell, Sun, Moon, Loader2, Sparkles, User as UserIcon
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+
+function SidebarNav({ navigation, pathname }: { navigation: any[]; pathname: string }) {
+  const searchParams = useSearchParams();
+  const currentTab = searchParams.get("tab") || "ats";
+
+  return (
+    <nav className="space-y-1.5">
+      {navigation.map((item, idx) => {
+        const Icon = item.icon;
+        const isActive = item.activeKey
+          ? pathname === "/dashboard/candidate" && currentTab === item.activeKey
+          : pathname === item.href;
+
+        return (
+          <Link
+            key={idx}
+            href={item.href}
+            className={`flex items-center gap-3 py-2.5 px-4 rounded-xl text-xs font-semibold tracking-wide transition-all ${
+              isActive
+                ? "bg-primary text-white shadow-md shadow-primary/20"
+                : "text-muted-foreground hover:bg-muted hover:text-foreground"
+            }`}
+          >
+            <Icon className="w-4.5 h-4.5" />
+            {item.name}
+          </Link>
+        );
+      })}
+    </nav>
+  );
+}
 
 export default function DashboardLayout({
   children,
@@ -62,8 +93,8 @@ export default function DashboardLayout({
         { name: "Settings", href: "#", icon: Settings },
       ]
     : [
-        { name: "ATS Optimizer", href: "/dashboard/candidate", icon: FileText },
-        { name: "JD Matcher", href: "#", icon: Brain },
+        { name: "ATS Optimizer", href: "/dashboard/candidate?tab=ats", icon: FileText, activeKey: "ats" },
+        { name: "JD Matcher", href: "/dashboard/candidate?tab=jd", icon: Brain, activeKey: "jd" },
         { name: "Settings", href: "#", icon: Settings },
       ];
 
@@ -101,26 +132,9 @@ export default function DashboardLayout({
               </div>
 
               {/* Nav Items */}
-              <nav className="space-y-1.5">
-                {navigation.map((item, idx) => {
-                  const Icon = item.icon;
-                  const isActive = pathname === item.href;
-                  return (
-                    <Link
-                      key={idx}
-                      href={item.href}
-                      className={`flex items-center gap-3 py-2.5 px-4 rounded-xl text-xs font-semibold tracking-wide transition-all ${
-                        isActive
-                          ? "bg-primary text-white shadow-md shadow-primary/20"
-                          : "text-muted-foreground hover:bg-muted hover:text-foreground"
-                      }`}
-                    >
-                      <Icon className="w-4.5 h-4.5" />
-                      {item.name}
-                    </Link>
-                  );
-                })}
-              </nav>
+              <Suspense fallback={<div className="h-28" />}>
+                <SidebarNav navigation={navigation} pathname={pathname} />
+              </Suspense>
             </div>
 
             {/* User Profile Card Footer */}

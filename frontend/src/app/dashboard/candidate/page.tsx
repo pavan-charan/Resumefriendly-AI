@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { api } from "@/services/api";
 import { Resume, ATSReport, JDMatch } from "@/types";
 import { 
@@ -8,8 +8,9 @@ import {
   Sparkles, Code, ChevronRight, HelpCircle, ArrowRight, Loader2, ListFilter
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useSearchParams } from "next/navigation";
 
-export default function CandidateDashboard() {
+function CandidateDashboardContent() {
   const [history, setHistory] = useState<Resume[]>([]);
   const [activeResume, setActiveResume] = useState<Resume | null>(null);
   const [report, setReport] = useState<ATSReport | null>(null);
@@ -22,6 +23,17 @@ export default function CandidateDashboard() {
   const [jdText, setJdText] = useState("");
   const [matchReport, setMatchReport] = useState<JDMatch | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  const searchParams = useSearchParams();
+  const tab = searchParams.get("tab");
+
+  useEffect(() => {
+    if (tab === "jd") {
+      setActiveTab("jd");
+    } else if (tab === "ats") {
+      setActiveTab("ats");
+    }
+  }, [tab]);
 
   useEffect(() => {
     loadHistory();
@@ -455,5 +467,18 @@ export default function CandidateDashboard() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function CandidateDashboard() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex flex-col items-center justify-center text-muted-foreground gap-4">
+        <Loader2 className="w-10 h-10 animate-spin text-primary" />
+        <span className="text-sm font-medium">Loading candidate dashboard...</span>
+      </div>
+    }>
+      <CandidateDashboardContent />
+    </Suspense>
   );
 }

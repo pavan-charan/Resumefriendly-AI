@@ -41,6 +41,13 @@ def chat(
 ):
     """Send a message to the career coach."""
     try:
+        from app.models.coach import CoachConversation
+        convo = db.query(CoachConversation).filter(CoachConversation.id == conversation_id).first()
+        if not convo:
+            raise HTTPException(status_code=404, detail="Conversation not found")
+        if convo.user_id != current_user.id and current_user.role != "ADMIN":
+            raise HTTPException(status_code=403, detail="You do not have permission to chat in this conversation")
+
         service = CoachService(db)
         return service.chat(conversation_id, request.message)
     except ValueError as e:

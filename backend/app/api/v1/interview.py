@@ -39,6 +39,13 @@ def submit_answer(
 ):
     """Submit an answer for evaluation."""
     try:
+        from app.models.interview import InterviewQuestion
+        question = db.query(InterviewQuestion).filter(InterviewQuestion.id == question_id).first()
+        if not question:
+            raise HTTPException(status_code=404, detail="Question not found")
+        if question.session.user_id != current_user.id and current_user.role != "ADMIN":
+            raise HTTPException(status_code=403, detail="You do not have permission to answer this question")
+
         service = InterviewService(db)
         return service.submit_answer(question_id, request.answer)
     except ValueError as e:

@@ -65,6 +65,12 @@ def get_version(
 ):
     """Get a specific rewritten version."""
     try:
+        version = db.query(ResumeVersion).filter(ResumeVersion.id == version_id).first()
+        if not version:
+            raise HTTPException(status_code=404, detail="Version not found")
+        if version.user_id != current_user.id and current_user.role != "ADMIN":
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="You do not have permission to access this version")
+
         service = RewriterService(db)
         return service.get_version(version_id)
     except ValueError as e:

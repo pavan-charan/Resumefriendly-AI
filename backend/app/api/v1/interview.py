@@ -65,6 +65,13 @@ def get_session(
 ):
     """Get a specific session with all questions."""
     try:
+        from app.models.interview import InterviewSession
+        session = db.query(InterviewSession).filter(InterviewSession.id == session_id).first()
+        if not session:
+            raise HTTPException(status_code=404, detail="Session not found")
+        if session.user_id != current_user.id and current_user.role != "ADMIN":
+            raise HTTPException(status_code=403, detail="You do not have permission to access this session")
+
         service = InterviewService(db)
         return service.get_session(session_id)
     except ValueError as e:

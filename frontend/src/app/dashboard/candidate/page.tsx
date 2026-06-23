@@ -323,8 +323,7 @@ function CandidateDashboardContent() {
     setCoachLoading(true);
     
     // Optimistic update
-    const optimisticMsg = { id: "temp", role: "user" as const, content: userMsg, created_at: new Date().toISOString() };
-    setActiveConversation(prev => prev ? { ...prev, messages: [...prev.messages, optimisticMsg] } : prev);
+    const optimisticMsg = { id: `temp-${Date.now()}`, role: "user" as const, content: userMsg, created_at: new Date().toISOString() };
     
     try {
       const aiResponse = await api.sendCoachMessage(activeConversation.id, userMsg);

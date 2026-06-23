@@ -176,7 +176,7 @@ export const api = {
   // =============================================
 
   // AI Resume Rewriter
-  async rewriteResume(payload: { resume_id: string; target_role?: string; tone: string; focus_areas: string[] }) {
+  async rewriteResume(payload: { resume_id: string; target_role?: string; tone: "professional" | "creative" | "executive" | "technical"; focus_areas: string[] }) {
     const response = await fetch(`${API_URL}/api/v1/rewriter/rewrite`, {
       method: "POST",
       headers: getHeaders(),

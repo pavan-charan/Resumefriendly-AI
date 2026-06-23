@@ -109,14 +109,22 @@ export interface RewriteRequest {
   focus_areas: string[];
 }
 
+export interface RewrittenResumeContent {
+  summary?: string;
+  experience?: ExperienceItem[];
+  skills?: string[];
+  projects?: string[];
+  education?: EducationItem[];
+}
+
 export interface RewriteVersion {
   version_id: string;
   version_number: number;
   original: ParsedResumeContent;
-  rewritten: Record<string, any>;
+  rewritten: RewrittenResumeContent;
   improvements: string[];
   target_role?: string;
-  tone: string;
+  tone: RewriteRequest["tone"];
   created_at: string;
 }
 

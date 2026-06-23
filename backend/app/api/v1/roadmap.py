@@ -17,6 +17,14 @@ def generate_roadmap(
 ):
     """Generate a career roadmap."""
     try:
+        if request.resume_id:
+            from app.models.resume import Resume
+            resume = db.query(Resume).filter(Resume.id == request.resume_id).first()
+            if not resume:
+                raise HTTPException(status_code=404, detail="Resume not found")
+            if resume.user_id != current_user.id and current_user.role != "ADMIN":
+                raise HTTPException(status_code=403, detail="You do not have permission to generate a roadmap for this resume")
+
         service = RoadmapService(db)
         return service.generate(
             user_id=str(current_user.id),

@@ -17,6 +17,14 @@ def start_session(
 ):
     """Start a new mock interview session."""
     try:
+        if request.resume_id:
+            from app.models.resume import Resume
+            resume = db.query(Resume).filter(Resume.id == request.resume_id).first()
+            if not resume:
+                raise HTTPException(status_code=404, detail="Resume not found")
+            if resume.user_id != current_user.id and current_user.role != "ADMIN":
+                raise HTTPException(status_code=403, detail="You do not have permission to start an interview for this resume")
+
         service = InterviewService(db)
         result = service.start_session(
             user_id=str(current_user.id),

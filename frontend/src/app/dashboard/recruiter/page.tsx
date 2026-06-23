@@ -69,7 +69,8 @@ export default function RecruiterDashboard() {
         "Email",
         "Match Score (%)",
         "College Name",
-        "Graduation Year",
+        "Graduation Start Year",
+        "Graduation End Year",
         "Matched Skills",
         "Primary Experience",
         "Education Profile"
@@ -82,7 +83,8 @@ export default function RecruiterDashboard() {
         const email = (cand.email || "").replace(/"/g, '""');
         const score = cand.match_score || 0;
         const college = (cand.summary?.college_name || "N/A").replace(/"/g, '""');
-        const gradYear = (cand.summary?.graduation_year || "N/A").replace(/"/g, '""');
+        const gradStart = (cand.summary?.graduation_start_year || "N/A").replace(/"/g, '""');
+        const gradEnd = (cand.summary?.graduation_end_year || "N/A").replace(/"/g, '""');
         const skills = ((cand.summary && cand.summary.skills) || []).join(", ").replace(/"/g, '""');
         const exp = ((cand.summary && cand.summary.experience) || "").replace(/"/g, '""').replace(/\n/g, ' ');
         const edu = ((cand.summary && cand.summary.education) || "").replace(/"/g, '""').replace(/\n/g, ' ');
@@ -93,7 +95,8 @@ export default function RecruiterDashboard() {
           `"${email}"`,
           score,
           `"${college}"`,
-          `"${gradYear}"`,
+          `"${gradStart}"`,
+          `"${gradEnd}"`,
           `"${skills}"`,
           `"${exp}"`,
           `"${edu}"`

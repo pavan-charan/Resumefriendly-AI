@@ -13,6 +13,9 @@ class EducationItem(BaseModel):
     degree: Optional[str] = None
     major: Optional[str] = None
     school: Optional[str] = None
+    grad_year: Optional[str] = "N/A"
+    graduation_start_year: Optional[str] = "N/A"
+    graduation_end_year: Optional[str] = "N/A"
 
 class ParsedResumeContent(BaseModel):
     name: Optional[str] = None

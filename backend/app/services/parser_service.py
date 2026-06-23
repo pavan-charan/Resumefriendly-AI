@@ -56,6 +56,22 @@ class ParserService:
             text = f"Error reading DOCX: {str(e)}"
         return text
 
+    def _is_education_line(self, line: str) -> bool:
+        line_lower = line.lower()
+        # Look for indicators of colleges, universities, or training institutes
+        has_inst = any(x in line_lower for x in ["university", "college", "institute", "school", "academy", "iit", "iiit", "bits", "nit", "learning center", "training center", "coursera", "udemy", "simplilearn", "udacity"])
+        # Look for degree, diploma, course, or certification keywords
+        has_deg = any(x in line_lower for x in ["bachelor", "master", "phd", "degree", "diploma", "course", "b.tech", "m.tech", "bca", "mca", "mba", "pgdm", "certifications", "certificate"])
+        # Look for passout/graduation year (4 digit year)
+        years = re.findall(r"\b(?:19|20)\d{2}\b", line)
+        has_year = len(years) > 0
+        
+        # Capture as education if it mentions an institute and either a course/degree or a year
+        # Or if it explicitly mentions a standard tech degree (b.tech/mca/mba/etc) alongside a year
+        if (has_inst and (has_deg or has_year)) or (any(d in line_lower for d in ["b.tech", "m.tech", "bca", "mca", "mba", "pgdm"]) and has_year):
+            return True
+        return False
+
     def _analyze_text(self, text: str, file_path: str) -> Dict[str, Any]:
         """
         Runs regex and heuristics to structure resume data.
@@ -98,73 +114,87 @@ class ParserService:
             if re.search(pattern, text, re.IGNORECASE):
                 skills_matched.append(skill)
 
-        # 5. Education heuristic
+        # 5. Education heuristic (scan globally to capture formal degrees, diplomas, and courses from colleges/institutes)
         education = []
-        edu_keywords = ["education", "university", "college", "degree", "school", "bachelor", "master", "phd", "b.s", "m.s", "b.sc", "m.sc"]
-        edu_started = False
-        
-        # Look for education lines
-        for i, line in enumerate(lines):
-            line_lower = line.lower()
-            if any(k in line_lower for k in ["education", "academic background", "qualification"]):
-                edu_started = True
-                continue
-            if edu_started:
-                # Stop if we hit another header
-                if any(h in line_lower for h in ["experience", "employment", "work history", "skills", "projects", "certifications", "certificates", "courses", "credentials", "licenses", "awards", "publications", "interests", "activities", "summary"]):
-                    edu_started = False
-                    continue
-                # Ignore lines that look like certifications inside the education parser
-                if any(c in line_lower for c in ["certified", "certification", "certificate"]):
-                    continue
-                # If the line contains degree/university terms, capture it
-                if any(x in line_lower for x in ["university", "college", "bachelor", "master", "phd", "degree", "school", "b.s", "m.s", "b.sc"]):
-                    degree = "Bachelor of Science" if "bachelor" in line_lower or "b.s" in line_lower else ("Master of Science" if "master" in line_lower or "m.s" in line_lower else "Degree")
-                    major = "Computer Science" if "computer" in line_lower or "software" in line_lower or "tech" in line_lower else "General Studies"
-                    
-                    # Extract graduation year
-                    year_match = re.search(r"\b(19|20)\d{2}\b", line)
-                    grad_year = year_match.group(0) if year_match else "N/A"
-                    
-                    # Extract school name
-                    school = line
-                    if year_match:
-                        school = school.replace(year_match.group(0), "")
-                    for phrase in ["bachelor", "master", "phd", "degree", "b.s", "m.s", "in computer science", "in software", ", "]:
-                        school = re.sub(phrase, "", school, flags=re.IGNORECASE)
-                    
-                    school = re.sub(r"[\(\)\-\:\,]", " ", school)
-                    school = " ".join(school.split()).strip()
-                    
+        for line in lines:
+            if self._is_education_line(line):
+                line_lower = line.lower()
+                degree = "Degree"
+                if "bachelor" in line_lower or "b.s" in line_lower or "b.tech" in line_lower or "bca" in line_lower:
+                    degree = "Bachelor's Degree"
+                elif "master" in line_lower or "m.s" in line_lower or "m.tech" in line_lower or "mca" in line_lower or "mba" in line_lower:
+                    degree = "Master's Degree"
+                elif "diploma" in line_lower or "pgdm" in line_lower:
+                    degree = "Diploma"
+                elif "phd" in line_lower:
+                    degree = "PhD"
+                elif "course" in line_lower or "certification" in line_lower or "certificate" in line_lower:
+                    degree = "Course / Certification"
+
+                # Major/Specialization heuristic
+                major = "General Studies"
+                if "computer" in line_lower or "software" in line_lower or "tech" in line_lower or "it " in line_lower or "information technology" in line_lower:
+                    major = "Computer Science / IT"
+                elif "engineering" in line_lower:
+                    major = "Engineering"
+                elif "data science" in line_lower or "analytics" in line_lower:
+                    major = "Data Science"
+                elif "business" in line_lower or "management" in line_lower or "mba" in line_lower:
+                    major = "Business Administration"
+
+                # Extract years: first is start date, second is end date. If only one is present, it is end date.
+                years = re.findall(r"\b(?:19|20)\d{2}\b", line)
+                graduation_start_year = "N/A"
+                graduation_end_year = "N/A"
+                grad_year = "N/A"
+                
+                if len(years) >= 2:
+                    sorted_years = sorted([int(y) for y in years[:2]])
+                    graduation_start_year = str(sorted_years[0])
+                    graduation_end_year = str(sorted_years[1])
+                    grad_year = str(sorted_years[1])
+                elif len(years) == 1:
+                    graduation_end_year = years[0]
+                    grad_year = years[0]
+
+                # Extract and clean school/center name
+                school = line
+                for y in years:
+                    school = school.replace(y, "")
+                
+                # Replace common punctuation with spaces to avoid words joining together
+                school = re.sub(r"[\(\)\-\:\,]", " ", school)
+                
+                for phrase in [
+                    "bachelor", "master", "phd", "degree", "diploma", "course", "b.s", "m.s", "b.tech", "m.tech", "bca", "mca", "mba", "pgdm", "in computer science", "in software", "in engineering", "from", "at",
+                    "january", "february", "march", "april", "may", "june", "july", "august", "september", "october", "november", "december",
+                    "jan", "feb", "mar", "apr", "jun", "jul", "aug", "sep", "sept", "oct", "nov", "dec"
+                ]:
+                    school = re.sub(r"\b" + re.escape(phrase) + r"\b", "", school, flags=re.IGNORECASE)
+                
+                school = " ".join(school.split()).strip()
+
+                # Add to list and de-duplicate by school/center name and degree
+                if school and not any(e["school"].lower() == school.lower() and e["degree"].lower() == degree.lower() for e in education):
                     education.append({
                         "degree": degree,
                         "major": major,
-                        "school": school or "Accredited Institution",
-                        "grad_year": grad_year
+                        "school": school or "Accredited Institution/Center",
+                        "grad_year": grad_year,
+                        "graduation_start_year": graduation_start_year,
+                        "graduation_end_year": graduation_end_year
                     })
         
+        # Fallback default if no education lines parsed
         if not education:
-            # Fallback if no specific section found but terms exist
-            for line in lines:
-                if any(c in line.lower() for c in ["certified", "certification", "certificate"]):
-                    continue
-                if any(x in line.lower() for x in ["university", "college", "bachelor", "master"]):
-                    year_match = re.search(r"\b(19|20)\d{2}\b", line)
-                    grad_year = year_match.group(0) if year_match else "N/A"
-                    
-                    school = line.strip()
-                    if year_match:
-                        school = school.replace(year_match.group(0), "").strip()
-                    school = re.sub(r"[\(\)\-\:\,]", " ", school)
-                    school = " ".join(school.split()).strip()
-                    
-                    education.append({
-                        "degree": "Degree",
-                        "major": "Computer Science" if "computer" in line.lower() else "Engineering",
-                        "school": school or "Accredited Institution",
-                        "grad_year": grad_year
-                    })
-                    break
+            education.append({
+                "degree": "Degree",
+                "major": "Computer Science / Engineering",
+                "school": "Accredited University / Institute",
+                "grad_year": "N/A",
+                "graduation_start_year": "N/A",
+                "graduation_end_year": "N/A"
+            })
 
         # 6. Experience heuristic
         experience = []
@@ -264,6 +294,9 @@ class ParserService:
             if cert_started:
                 if any(h in line_lower for h in ["experience", "education", "skills", "projects"]):
                     cert_started = False
+                    continue
+                # Skip any lines that represent formal education or courses from colleges/institutes
+                if self._is_education_line(line):
                     continue
                 if len(line) > 5 and len(line) < 100:
                     certifications.append(line.strip())

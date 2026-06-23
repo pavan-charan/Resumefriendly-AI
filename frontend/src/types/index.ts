@@ -18,6 +18,9 @@ export interface EducationItem {
   degree?: string;
   major?: string;
   school?: string;
+  grad_year?: string;
+  graduation_start_year?: string;
+  graduation_end_year?: string;
 }
 
 export interface ParsedResumeContent {
@@ -76,6 +79,8 @@ export interface CandidateSummary {
   education: string;
   college_name?: string;
   graduation_year?: string;
+  graduation_start_year?: string;
+  graduation_end_year?: string;
   match_percentage: number;
 }
 

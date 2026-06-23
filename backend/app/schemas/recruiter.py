@@ -8,6 +8,8 @@ class CandidateSummary(BaseModel):
     education: str
     college_name: Optional[str] = "N/A"
     graduation_year: Optional[str] = "N/A"
+    graduation_start_year: Optional[str] = "N/A"
+    graduation_end_year: Optional[str] = "N/A"
     match_percentage: int
 
 class RankedCandidate(BaseModel):

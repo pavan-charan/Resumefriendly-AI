@@ -96,11 +96,27 @@ class RecruiterService:
                 edu_summary = "Degree not specified"
                 college_name = "N/A"
                 graduation_year = "N/A"
+                graduation_start_year = "N/A"
+                graduation_end_year = "N/A"
                 if education_list:
                     primary = education_list[0]
-                    edu_summary = f"{primary.get('degree', 'Degree')} in {primary.get('major', 'Major')} from {primary.get('school', 'School')}"
-                    college_name = primary.get('school', 'N/A')
-                    graduation_year = primary.get('grad_year', 'N/A')
+                    school = primary.get('school', 'School')
+                    degree = primary.get('degree', 'Degree')
+                    major = primary.get('major', 'Major')
+                    start_yr = primary.get('graduation_start_year', 'N/A')
+                    end_yr = primary.get('graduation_end_year', 'N/A')
+                    
+                    year_str = ""
+                    if start_yr != "N/A" and end_yr != "N/A":
+                        year_str = f" ({start_yr} - {end_yr})"
+                    elif end_yr != "N/A":
+                        year_str = f" ({end_yr})"
+                        
+                    edu_summary = f"{degree} in {major} from {school}{year_str}"
+                    college_name = school
+                    graduation_year = end_yr
+                    graduation_start_year = start_yr
+                    graduation_end_year = end_yr
 
                 summary = CandidateSummary(
                     skills=content.get("skills", []),
@@ -108,6 +124,8 @@ class RecruiterService:
                     education=edu_summary,
                     college_name=college_name,
                     graduation_year=graduation_year,
+                    graduation_start_year=graduation_start_year,
+                    graduation_end_year=graduation_end_year,
                     match_percentage=match_results["match_score"]
                 )
                 

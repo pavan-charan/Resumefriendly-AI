@@ -152,4 +152,22 @@ export const api = {
     }
     return response.json();
   },
+
+  async getRecruiterJobs() {
+    const response = await fetch(`${API_URL}/api/v1/recruiter/jobs`, {
+      method: "GET",
+      headers: getHeaders(),
+    });
+    if (!response.ok) throw new Error("Failed to load recruiter job descriptions");
+    return response.json();
+  },
+
+  async getJobScreeningResults(jdId: string) {
+    const response = await fetch(`${API_URL}/api/v1/recruiter/jobs/${jdId}`, {
+      method: "GET",
+      headers: getHeaders(),
+    });
+    if (!response.ok) throw new Error("Failed to load job screening results");
+    return response.json();
+  },
 };

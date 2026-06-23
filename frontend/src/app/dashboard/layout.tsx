@@ -19,7 +19,7 @@ function SidebarNav({ navigation, pathname }: { navigation: any[]; pathname: str
       {navigation.map((item, idx) => {
         const Icon = item.icon;
         const isActive = item.activeKey
-          ? pathname === "/dashboard/candidate" && currentTab === item.activeKey
+          ? (pathname === "/dashboard/candidate" || pathname === "/dashboard/recruiter") && currentTab === item.activeKey
           : pathname === item.href;
 
         return (
@@ -88,8 +88,8 @@ export default function DashboardLayout({
 
   const navigation = isRecruiter 
     ? [
-        { name: "Screening Dashboard", href: "/dashboard/recruiter", icon: CheckSquare },
-        { name: "Job Listings", href: "#", icon: Brain },
+        { name: "Screening Dashboard", href: "/dashboard/recruiter?tab=screen", icon: CheckSquare, activeKey: "screen" },
+        { name: "Job Listings", href: "/dashboard/recruiter?tab=jobs", icon: Brain, activeKey: "jobs" },
         { name: "Settings", href: "#", icon: Settings },
       ]
     : [

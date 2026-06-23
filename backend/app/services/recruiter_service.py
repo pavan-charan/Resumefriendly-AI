@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 from uuid import UUID
 from fastapi import UploadFile
 
@@ -168,5 +168,105 @@ class RecruiterService:
 
         return RecruiterScreenResponse(
             job_id=db_jd.id,
+            ranked_candidates=ranked_list
+        )
+
+    def get_ranked_candidates_for_jd(
+        self,
+        recruiter_id: UUID,
+        jd_id: UUID
+    ) -> Optional[RecruiterScreenResponse]:
+        # 1. Fetch JD to check existence and ownership
+        jd = self.jd_repo.get_by_id(jd_id)
+        if not jd:
+            return None
+        # Check creator
+        if jd.creator_id != recruiter_id:
+            return None
+            
+        # 2. Get uploads
+        uploads = self.jd_repo.get_recruiter_uploads_by_jd(jd_id)
+        
+        ranked_candidates = []
+        for idx, upload in enumerate(uploads):
+            db_resume = self.resume_repo.get_by_id(upload.resume_id)
+            if not db_resume:
+                continue
+            
+            # Fetch match
+            match_record = self.jd_repo.get_jd_match(db_resume.id, jd_id)
+            match_score = match_record.match_score if match_record else 0
+            
+            content = db_resume.parsed_content
+            
+            # Construct experience summary
+            experience_list = content.get("experience", [])
+            exp_summary = "Not specified"
+            if experience_list:
+                primary = experience_list[0]
+                exp_summary = f"{primary.get('role', 'Professional')} at {primary.get('company', 'Organization')} ({primary.get('duration', 'N/A')})"
+                
+            # Construct education summary
+            education_list = content.get("education", [])
+            edu_summary = "Degree not specified"
+            college_name = "N/A"
+            graduation_year = "N/A"
+            graduation_start_year = "N/A"
+            graduation_end_year = "N/A"
+            if education_list:
+                primary = education_list[0]
+                school = primary.get('school', 'School')
+                degree = primary.get('degree', 'Degree')
+                major = primary.get('major', 'Major')
+                start_yr = primary.get('graduation_start_year', 'N/A')
+                end_yr = primary.get('graduation_end_year', 'N/A')
+                
+                year_str = ""
+                if start_yr != "N/A" and end_yr != "N/A":
+                    year_str = f" ({start_yr} - {end_yr})"
+                elif end_yr != "N/A":
+                    year_str = f" ({end_yr})"
+                    
+                edu_summary = f"{degree} in {major} from {school}{year_str}"
+                college_name = school
+                graduation_year = end_yr
+                graduation_start_year = start_yr
+                graduation_end_year = end_yr
+
+            summary = CandidateSummary(
+                skills=content.get("skills", []),
+                experience=exp_summary,
+                education=edu_summary,
+                college_name=college_name,
+                graduation_year=graduation_year,
+                graduation_start_year=graduation_start_year,
+                graduation_end_year=graduation_end_year,
+                match_percentage=match_score
+            )
+            
+            ranked_candidates.append({
+                "candidate_name": content.get("name", "Unknown Candidate"),
+                "email": content.get("email") or f"no-email-{idx}@example.com",
+                "match_score": match_score,
+                "summary": summary
+            })
+            
+        # Sort candidates
+        ranked_candidates.sort(key=lambda x: x["match_score"], reverse=True)
+        
+        ranked_list = []
+        for rank, cand in enumerate(ranked_candidates, start=1):
+            ranked_list.append(
+                RankedCandidate(
+                    rank=rank,
+                    candidate_name=cand["candidate_name"],
+                    email=cand["email"],
+                    match_score=cand["match_score"],
+                    summary=cand["summary"]
+                )
+            )
+            
+        return RecruiterScreenResponse(
+            job_id=jd_id,
             ranked_candidates=ranked_list
         )

@@ -9,6 +9,8 @@ from app.models.user import User
 from app.schemas.recruiter import RecruiterScreenResponse
 from app.services.recruiter_service import RecruiterService
 
+from app.schemas.jd import JobDescriptionResponse
+
 router = APIRouter(prefix="/recruiter", tags=["Recruiter Screening"])
 
 # Enforce Recruiter role
@@ -45,3 +47,30 @@ def screen_candidates(
     )
     
     return response
+
+@router.get("/jobs", response_model=List[JobDescriptionResponse])
+def get_recruiter_jobs(
+    current_user: User = Depends(is_recruiter),
+    db: Session = Depends(get_db)
+):
+    from app.repositories.jd import JobDescriptionRepository
+    jd_repo = JobDescriptionRepository(db)
+    return jd_repo.get_all_by_creator_id(current_user.id)
+
+@router.get("/jobs/{jd_id}", response_model=RecruiterScreenResponse)
+def get_job_screening_results(
+    jd_id: UUID,
+    current_user: User = Depends(is_recruiter),
+    db: Session = Depends(get_db)
+):
+    recruiter_service = RecruiterService(db)
+    results = recruiter_service.get_ranked_candidates_for_jd(
+        recruiter_id=current_user.id,
+        jd_id=jd_id
+    )
+    if not results:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Job description not found or not owned by recruiter"
+        )
+    return results

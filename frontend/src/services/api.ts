@@ -299,7 +299,7 @@ export const api = {
   },
 
   // Application Tracker
-  async createApplication(payload: any) {
+  async createApplication(payload: { company_name: string; job_title: string; job_url?: string; status?: string; applied_date?: string; salary_range?: string; location?: string; notes?: string; next_followup?: string }) {
     const response = await fetch(`${API_URL}/api/v1/tracker/applications`, {
       method: "POST",
       headers: getHeaders(),

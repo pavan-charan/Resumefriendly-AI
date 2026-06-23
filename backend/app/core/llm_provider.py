@@ -22,11 +22,12 @@ class LLMProvider:
     @property
     def client(self) -> OpenAI:
         if self._client is None:
+            if not settings.OPENROUTER_API_KEY:
+                raise RuntimeError("OPENROUTER_API_KEY is not set")
             self._client = OpenAI(
                 base_url="https://openrouter.ai/api/v1",
                 api_key=settings.OPENROUTER_API_KEY,
             )
-        return self._client
     
     def generate(
         self,

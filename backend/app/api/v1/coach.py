@@ -67,6 +67,13 @@ def get_conversation(
 ):
     """Get a specific conversation with all messages."""
     try:
+        from app.models.coach import CoachConversation
+        convo = db.query(CoachConversation).filter(CoachConversation.id == conversation_id).first()
+        if not convo:
+            raise HTTPException(status_code=404, detail="Conversation not found")
+        if convo.user_id != current_user.id and current_user.role != "ADMIN":
+            raise HTTPException(status_code=403, detail="You do not have permission to access this conversation")
+
         service = CoachService(db)
         return service.get_conversation(conversation_id)
     except ValueError as e:

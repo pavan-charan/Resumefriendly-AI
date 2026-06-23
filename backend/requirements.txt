@@ -12,4 +12,4 @@ sentence-transformers==2.5.1
 chromadb==0.4.24
 numpy==1.26.4
 python-dotenv==1.0.1
-openai>=1.30.0
+openai==1.30.0

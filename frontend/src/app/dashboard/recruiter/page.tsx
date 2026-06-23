@@ -68,6 +68,8 @@ export default function RecruiterDashboard() {
         "Candidate Name",
         "Email",
         "Match Score (%)",
+        "College Name",
+        "Graduation Year",
         "Matched Skills",
         "Primary Experience",
         "Education Profile"
@@ -79,6 +81,8 @@ export default function RecruiterDashboard() {
         const name = (cand.candidate_name || "Unknown").replace(/"/g, '""');
         const email = (cand.email || "").replace(/"/g, '""');
         const score = cand.match_score || 0;
+        const college = (cand.summary?.college_name || "N/A").replace(/"/g, '""');
+        const gradYear = (cand.summary?.graduation_year || "N/A").replace(/"/g, '""');
         const skills = ((cand.summary && cand.summary.skills) || []).join(", ").replace(/"/g, '""');
         const exp = ((cand.summary && cand.summary.experience) || "").replace(/"/g, '""').replace(/\n/g, ' ');
         const edu = ((cand.summary && cand.summary.education) || "").replace(/"/g, '""').replace(/\n/g, ' ');
@@ -88,6 +92,8 @@ export default function RecruiterDashboard() {
           `"${name}"`,
           `"${email}"`,
           score,
+          `"${college}"`,
+          `"${gradYear}"`,
           `"${skills}"`,
           `"${exp}"`,
           `"${edu}"`
@@ -101,12 +107,12 @@ export default function RecruiterDashboard() {
 
       console.log("CSV Content compiled successfully. Length:", csvContent.length);
 
-      // Create a Blob with UTF-8 BOM to ensure Excel opens special characters correctly
+      // Create a Data URI with UTF-8 BOM to ensure Excel opens special characters correctly
       const BOM = "\uFEFF";
-      const blob = new Blob([BOM + csvContent], { type: "text/csv;charset=utf-8;" });
-      const url = URL.createObjectURL(blob);
+      const csvDataUri = "data:text/csv;charset=utf-8," + BOM + encodeURIComponent(csvContent);
+      
       const link = document.createElement("a");
-      link.href = url;
+      link.setAttribute("href", csvDataUri);
       
       // File name: ranked_candidates_JobTitle_Company.csv
       const formattedJob = (jobTitle || "").replace(/[^a-z0-9]/gi, '_').toLowerCase();
@@ -117,11 +123,7 @@ export default function RecruiterDashboard() {
       link.click();
       document.body.removeChild(link);
       
-      // Revoke URL to prevent memory leaks after click has finished propagating
-      setTimeout(() => {
-        URL.revokeObjectURL(url);
-        console.log("Export download triggered successfully for:", filename);
-      }, 100);
+      console.log("Export download triggered successfully for:", filename);
     } catch (err) {
       console.error("Failed to generate and download CSV:", err);
     }

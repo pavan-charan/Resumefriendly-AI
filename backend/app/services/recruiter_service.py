@@ -94,14 +94,20 @@ class RecruiterService:
                 # Construct clean education summary sentence
                 education_list = content.get("education", [])
                 edu_summary = "Degree not specified"
+                college_name = "N/A"
+                graduation_year = "N/A"
                 if education_list:
                     primary = education_list[0]
                     edu_summary = f"{primary.get('degree', 'Degree')} in {primary.get('major', 'Major')} from {primary.get('school', 'School')}"
+                    college_name = primary.get('school', 'N/A')
+                    graduation_year = primary.get('grad_year', 'N/A')
 
                 summary = CandidateSummary(
                     skills=content.get("skills", []),
                     experience=exp_summary,
                     education=edu_summary,
+                    college_name=college_name,
+                    graduation_year=graduation_year,
                     match_percentage=match_results["match_score"]
                 )
                 

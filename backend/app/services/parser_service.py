@@ -81,7 +81,7 @@ class ParserService:
                 name = clean_base
 
         # 2. Email parsing
-        email_regex = r"[\w\.-]+@[\w\.-]+\.\w+"
+        email_regex = r"[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}"
         emails = re.findall(email_regex, text)
         email = emails[0] if emails else None
 
@@ -111,34 +111,58 @@ class ParserService:
                 continue
             if edu_started:
                 # Stop if we hit another header
-                if any(h in line_lower for h in ["experience", "employment", "work history", "skills", "projects", "certifications"]):
+                if any(h in line_lower for h in ["experience", "employment", "work history", "skills", "projects", "certifications", "certificates", "courses", "credentials", "licenses", "awards", "publications", "interests", "activities", "summary"]):
                     edu_started = False
+                    continue
+                # Ignore lines that look like certifications inside the education parser
+                if any(c in line_lower for c in ["certified", "certification", "certificate"]):
                     continue
                 # If the line contains degree/university terms, capture it
                 if any(x in line_lower for x in ["university", "college", "bachelor", "master", "phd", "degree", "school", "b.s", "m.s", "b.sc"]):
                     degree = "Bachelor of Science" if "bachelor" in line_lower or "b.s" in line_lower else ("Master of Science" if "master" in line_lower or "m.s" in line_lower else "Degree")
                     major = "Computer Science" if "computer" in line_lower or "software" in line_lower or "tech" in line_lower else "General Studies"
                     
+                    # Extract graduation year
+                    year_match = re.search(r"\b(19|20)\d{2}\b", line)
+                    grad_year = year_match.group(0) if year_match else "N/A"
+                    
                     # Extract school name
                     school = line
+                    if year_match:
+                        school = school.replace(year_match.group(0), "")
                     for phrase in ["bachelor", "master", "phd", "degree", "b.s", "m.s", "in computer science", "in software", ", "]:
                         school = re.sub(phrase, "", school, flags=re.IGNORECASE)
-                    school = school.strip()
+                    
+                    school = re.sub(r"[\(\)\-\:\,]", " ", school)
+                    school = " ".join(school.split()).strip()
                     
                     education.append({
                         "degree": degree,
                         "major": major,
-                        "school": school or "Accredited Institution"
+                        "school": school or "Accredited Institution",
+                        "grad_year": grad_year
                     })
         
         if not education:
             # Fallback if no specific section found but terms exist
             for line in lines:
+                if any(c in line.lower() for c in ["certified", "certification", "certificate"]):
+                    continue
                 if any(x in line.lower() for x in ["university", "college", "bachelor", "master"]):
+                    year_match = re.search(r"\b(19|20)\d{2}\b", line)
+                    grad_year = year_match.group(0) if year_match else "N/A"
+                    
+                    school = line.strip()
+                    if year_match:
+                        school = school.replace(year_match.group(0), "").strip()
+                    school = re.sub(r"[\(\)\-\:\,]", " ", school)
+                    school = " ".join(school.split()).strip()
+                    
                     education.append({
                         "degree": "Degree",
                         "major": "Computer Science" if "computer" in line.lower() else "Engineering",
-                        "school": line.strip()
+                        "school": school or "Accredited Institution",
+                        "grad_year": grad_year
                     })
                     break
 
@@ -234,7 +258,7 @@ class ParserService:
         cert_started = False
         for line in lines:
             line_lower = line.lower()
-            if any(k in line_lower for k in ["certifications", "credentials", "licenses"]):
+            if any(k in line_lower for k in ["certifications", "certificates", "courses", "credentials", "licenses"]):
                 cert_started = True
                 continue
             if cert_started:

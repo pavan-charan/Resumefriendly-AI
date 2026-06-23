@@ -74,6 +74,8 @@ export interface CandidateSummary {
   skills: string[];
   experience: string;
   education: string;
+  college_name?: string;
+  graduation_year?: string;
   match_percentage: number;
 }
 

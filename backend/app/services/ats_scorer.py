@@ -29,22 +29,28 @@ class ATSScorer:
 
         # 2. Education Score (Max 10)
         education_score = 0
-        if education:
-            education_score = 8
+        has_real_education = education and not any(edu.get("school") in ["Accredited University / Institute", "Accredited Institution/Center", "School"] for edu in education)
+        if has_real_education:
+            education_score = 6
             # Upgrade if advanced degree found
             for edu in education:
                 degree_lower = edu.get("degree", "").lower()
                 if "master" in degree_lower or "phd" in degree_lower or "m.s" in degree_lower:
                     education_score = 10
                     break
+        else:
+            education_score = 2 if education else 0
 
         # 3. Experience Score (Max 20)
         experience_score = 0
-        if experience:
+        has_real_experience = experience and not any(exp.get("company") == "Enterprise Corporation" for exp in experience)
+        if has_real_experience:
             if len(experience) == 1:
-                experience_score = 12
+                experience_score = 10
             elif len(experience) >= 2:
                 experience_score = 20
+        else:
+            experience_score = 0
 
         # 4. Formatting Score (Max 15)
         formatting_score = 15
@@ -68,9 +74,11 @@ class ATSScorer:
         num_skills = len(skills)
         if num_skills > 0:
             if num_skills <= 3:
-                skills_score = 10
+                skills_score = 5
             elif num_skills <= 7:
-                skills_score = 20
+                skills_score = 15
+            elif num_skills <= 11:
+                skills_score = 25
             else:
                 skills_score = 30
 
@@ -91,9 +99,9 @@ class ATSScorer:
         num_matched_kw = len(matched_keywords)
         if num_matched_kw > 0:
             if num_matched_kw <= 2:
-                keywords_score = 8
-            elif num_matched_kw <= 4:
-                keywords_score = 15
+                keywords_score = 5
+            elif num_matched_kw <= 5:
+                keywords_score = 12
             else:
                 keywords_score = 20
 

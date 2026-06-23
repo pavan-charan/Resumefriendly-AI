@@ -78,14 +78,18 @@ class ParserService:
         """
         lines = [line.strip() for line in text.split("\n") if line.strip()]
         
-        # 1. Name heuristic (first non-empty line that isn't too long or doesn't have common formatting tags)
+        # 1. Name heuristic (first non-empty line that isn't too long or doesn't have common formatting tags/job titles)
         name = "Unknown Candidate"
-        for line in lines[:5]:
-            if 3 < len(line) < 35 and not any(x in line.lower() for x in ["email", "phone", "resume", "curriculum"]):
-                # Simple check for alphabetic and spaces
-                if re.match(r"^[A-Za-z\s\.\-\']+$", line):
-                    name = line
-                    break
+        title_keywords = ["engineer", "developer", "architect", "manager", "lead", "consultant", "analyst", "specialist", "designer", "programmer", "intern", "student", "professional", "resume", "cv", "vitae", "portfolio", "page", "summary", "profile", "contact", "about", "experience", "education", "skills"]
+        for line in lines[:8]:
+            line_clean = line.strip()
+            line_lower = line_clean.lower()
+            if (3 < len(line_clean) < 35 
+                and not any(x in line_lower for x in ["email", "phone", "resume", "curriculum", "page", "contact"])
+                and not any(r == line_lower or f" {r}" in line_lower or f"{r} " in line_lower for r in title_keywords)
+                and re.match(r"^[A-Za-z\s\.\-\']+$", line_clean)):
+                name = line_clean
+                break
         
         # Fallback name from file_path if name extraction resolves to Unknown
         if name == "Unknown Candidate" and file_path:
@@ -98,8 +102,28 @@ class ParserService:
 
         # 2. Email parsing
         email_regex = r"[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}"
-        emails = re.findall(email_regex, text)
-        email = emails[0] if emails else None
+        emails_found = re.findall(email_regex, text)
+        filtered_emails = []
+        for e in emails_found:
+            e_lower = e.lower()
+            # Skip system/tool/github/placeholder emails
+            if any(x in e_lower for x in ["git@github", "info@", "support@", "sales@", "contact@", "jobs@", "careers@", "noreply@", "example.com"]):
+                continue
+            # Skip package version false positives (having numbers in domain or after domain dot)
+            if re.search(r"@\d", e) or re.search(r"\.\d", e):
+                continue
+            filtered_emails.append(e)
+            
+        email = None
+        if filtered_emails:
+            # Prioritize email found in the first 15 lines of text
+            first_lines_text = "\n".join(lines[:15]).lower()
+            for fe in filtered_emails:
+                if fe.lower() in first_lines_text:
+                    email = fe
+                    break
+            if not email:
+                email = filtered_emails[0]
 
         # 3. Phone parsing
         phone_regex = r"(?:\+?\d{1,3}[-.\s]?)?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}"

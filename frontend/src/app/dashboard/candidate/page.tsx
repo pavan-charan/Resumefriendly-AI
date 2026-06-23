@@ -195,14 +195,14 @@ function CandidateDashboardContent() {
     setAnswerLoading(true);
     try {
       const feedback = await api.submitInterviewAnswer(question.id, currentAnswer);
-      const updated = { ...interviewSession };
-      updated.questions[activeQuestionIdx] = {
+      const updatedQuestions = [...interviewSession.questions];
+      updatedQuestions[activeQuestionIdx] = {
         ...question,
         user_answer: currentAnswer,
         ai_feedback: feedback.feedback,
         score: feedback.score,
       };
-      setInterviewSession(updated);
+      setInterviewSession({ ...interviewSession, questions: updatedQuestions });
       setCurrentAnswer("");
     } catch (err: any) {
       setError(err.message);

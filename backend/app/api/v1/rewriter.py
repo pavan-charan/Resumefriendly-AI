@@ -1,8 +1,10 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from app.core.database import get_db
 from app.core.security import get_current_user
 from app.models.user import User
+from app.models.resume import Resume
+from app.models.resume_version import ResumeVersion
 from app.services.rewriter_service import RewriterService
 from app.schemas.rewriter import RewriteRequest
 
@@ -17,6 +19,12 @@ def rewrite_resume(
 ):
     """Generate an AI-rewritten version of a resume."""
     try:
+        resume = db.query(Resume).filter(Resume.id == request.resume_id).first()
+        if not resume:
+            raise HTTPException(status_code=404, detail="Resume not found")
+        if resume.user_id != current_user.id and current_user.role != "ADMIN":
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="You do not have permission to rewrite this resume")
+
         service = RewriterService(db)
         result = service.rewrite_resume(
             resume_id=request.resume_id,

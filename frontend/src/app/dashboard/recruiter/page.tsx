@@ -49,6 +49,84 @@ export default function RecruiterDashboard() {
     }
   };
 
+  const handleExportExcel = () => {
+    console.log("handleExportExcel triggered");
+    const currentResult = result;
+    if (!currentResult) {
+      console.warn("Export aborted: result is null");
+      return;
+    }
+    if (!currentResult.ranked_candidates || currentResult.ranked_candidates.length === 0) {
+      console.warn("Export aborted: ranked_candidates list is empty");
+      return;
+    }
+
+    try {
+      // CSV Headers
+      const headers = [
+        "Rank",
+        "Candidate Name",
+        "Email",
+        "Match Score (%)",
+        "Matched Skills",
+        "Primary Experience",
+        "Education Profile"
+      ];
+
+      // Build CSV Rows safely ensuring no null reference crashes
+      const rows = currentResult.ranked_candidates.map(cand => {
+        const rank = cand.rank || 0;
+        const name = (cand.candidate_name || "Unknown").replace(/"/g, '""');
+        const email = (cand.email || "").replace(/"/g, '""');
+        const score = cand.match_score || 0;
+        const skills = ((cand.summary && cand.summary.skills) || []).join(", ").replace(/"/g, '""');
+        const exp = ((cand.summary && cand.summary.experience) || "").replace(/"/g, '""').replace(/\n/g, ' ');
+        const edu = ((cand.summary && cand.summary.education) || "").replace(/"/g, '""').replace(/\n/g, ' ');
+        
+        return [
+          rank,
+          `"${name}"`,
+          `"${email}"`,
+          score,
+          `"${skills}"`,
+          `"${exp}"`,
+          `"${edu}"`
+        ];
+      });
+
+      const csvContent = [
+        headers.join(","),
+        ...rows.map(row => row.join(","))
+      ].join("\n");
+
+      console.log("CSV Content compiled successfully. Length:", csvContent.length);
+
+      // Create a Blob with UTF-8 BOM to ensure Excel opens special characters correctly
+      const BOM = "\uFEFF";
+      const blob = new Blob([BOM + csvContent], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      
+      // File name: ranked_candidates_JobTitle_Company.csv
+      const formattedJob = (jobTitle || "").replace(/[^a-z0-9]/gi, '_').toLowerCase();
+      const filename = `ranked_candidates_${formattedJob || "screener"}.csv`;
+      
+      link.setAttribute("download", filename);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      // Revoke URL to prevent memory leaks after click has finished propagating
+      setTimeout(() => {
+        URL.revokeObjectURL(url);
+        console.log("Export download triggered successfully for:", filename);
+      }, 100);
+    } catch (err) {
+      console.error("Failed to generate and download CSV:", err);
+    }
+  };
+
   return (
     <div className="space-y-8 max-w-6xl mx-auto">
       {/* Brand Header */}
@@ -188,7 +266,13 @@ export default function RecruiterDashboard() {
                   <h3 className="font-heading font-bold text-sm text-foreground">Ranked Candidates</h3>
                   <p className="text-[10px] text-muted-foreground mt-0.5">Ordered descending by semantic fit</p>
                 </div>
-                <FileSpreadsheet className="w-5 h-5 text-primary" />
+                <button
+                  type="button"
+                  onClick={handleExportExcel}
+                  className="bg-primary/20 hover:bg-primary/30 text-primary border border-primary/30 py-1.5 px-3 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all"
+                >
+                  <FileSpreadsheet className="w-4 h-4" /> Export Excel (CSV)
+                </button>
               </div>
 
               {/* Candidates list table */}

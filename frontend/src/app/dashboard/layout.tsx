@@ -7,7 +7,7 @@ import Link from "next/link";
 import { 
   Brain, FileText, CheckSquare, Settings, LogOut, Menu, X, 
   Bell, Sun, Moon, Loader2, Sparkles, User as UserIcon,
-  PenTool, MessageSquare, BarChart3, Map, ClipboardList, Briefcase, Bot
+  PenTool, MessageSquare, BarChart3, Map, ClipboardList, Briefcase, Bot, Search
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -89,8 +89,11 @@ export default function DashboardLayout({
 
   const navigation = isRecruiter 
     ? [
-        { name: "Screening Dashboard", href: "/dashboard/recruiter?tab=screen", icon: CheckSquare, activeKey: "screen" },
-        { name: "Job Listings", href: "/dashboard/recruiter?tab=jobs", icon: Brain, activeKey: "jobs" },
+        { name: "Analytics Dashboard", href: "/dashboard/recruiter?tab=analytics", icon: BarChart3, activeKey: "analytics" },
+        { name: "Job Listings", href: "/dashboard/recruiter?tab=jobs", icon: Briefcase, activeKey: "jobs" },
+        { name: "Hiring Pipeline", href: "/dashboard/recruiter?tab=pipeline", icon: ClipboardList, activeKey: "pipeline" },
+        { name: "Talent Search", href: "/dashboard/recruiter?tab=search", icon: Search, activeKey: "search" },
+        { name: "AI Recopilot", href: "/dashboard/recruiter?tab=copilot", icon: Bot, activeKey: "copilot" },
         { name: "Settings", href: "#", icon: Settings },
       ]
     : [

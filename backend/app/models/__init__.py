@@ -12,6 +12,13 @@ from app.models.skill_gap import SkillGapAnalysis
 from app.models.career_roadmap import CareerRoadmap
 from app.models.job_application import JobApplication
 from app.models.coach import CoachConversation, CoachMessage
+# Recruiter Workflow models
+from app.models.job import Job, JobSkill, TeamMember
+from app.models.pipeline import CandidatePipeline, CandidateStageHistory, CandidateNote, CandidateFeedback
+from app.models.comparison import CandidateComparison
+from app.models.interview_kit import InterviewKit
+from app.models.recruiter_analytics import RecruiterAnalytics
+from app.models.activity_log import ActivityLog
 
 __all__ = [
     "Base",
@@ -29,4 +36,15 @@ __all__ = [
     "JobApplication",
     "CoachConversation",
     "CoachMessage",
+    "Job",
+    "JobSkill",
+    "TeamMember",
+    "CandidatePipeline",
+    "CandidateStageHistory",
+    "CandidateNote",
+    "CandidateFeedback",
+    "CandidateComparison",
+    "InterviewKit",
+    "RecruiterAnalytics",
+    "ActivityLog",
 ]

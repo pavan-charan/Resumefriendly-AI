@@ -407,4 +407,193 @@ export const api = {
     if (!response.ok) throw new Error("Failed to load conversation");
     return response.json();
   },
+
+  // Recruiter Phase 2 APIs
+  async createJob(payload: any) {
+    const response = await fetch(`${API_URL}/api/v1/jobs`, {
+      method: "POST",
+      headers: getHeaders(),
+      body: JSON.stringify(payload),
+    });
+    if (!response.ok) throw new Error("Failed to create job specification");
+    return response.json();
+  },
+
+  async updateJob(jobId: string, payload: any) {
+    const response = await fetch(`${API_URL}/api/v1/jobs/${jobId}`, {
+      method: "PATCH",
+      headers: getHeaders(),
+      body: JSON.stringify(payload),
+    });
+    if (!response.ok) throw new Error("Failed to update job specification");
+    return response.json();
+  },
+
+  async deleteJob(jobId: string) {
+    const response = await fetch(`${API_URL}/api/v1/jobs/${jobId}`, {
+      method: "DELETE",
+      headers: getHeaders(),
+    });
+    if (!response.ok) throw new Error("Failed to delete job");
+    return true;
+  },
+
+  async getJobsList(status?: string) {
+    const url = status ? `${API_URL}/api/v1/jobs?status=${status}` : `${API_URL}/api/v1/jobs`;
+    const response = await fetch(url, {
+      method: "GET",
+      headers: getHeaders(),
+    });
+    if (!response.ok) throw new Error("Failed to fetch jobs list");
+    return response.json();
+  },
+
+  async getJobDetails(jobId: string) {
+    const response = await fetch(`${API_URL}/api/v1/jobs/${jobId}`, {
+      method: "GET",
+      headers: getHeaders(),
+    });
+    if (!response.ok) throw new Error("Failed to fetch job details");
+    return response.json();
+  },
+
+  async getDashboardStats() {
+    const response = await fetch(`${API_URL}/api/v1/jobs/stats`, {
+      method: "GET",
+      headers: getHeaders(),
+    });
+    if (!response.ok) throw new Error("Failed to fetch dashboard statistics");
+    return response.json();
+  },
+
+  async getJobPipeline(jobId: string, filters: { stage?: string; min_score?: number; search?: string } = {}) {
+    const params = new URLSearchParams();
+    if (filters.stage) params.append("stage", filters.stage);
+    if (filters.min_score !== undefined) params.append("min_score", String(filters.min_score));
+    if (filters.search) params.append("search", filters.search);
+    
+    const url = `${API_URL}/api/v1/pipeline/${jobId}?${params.toString()}`;
+    const response = await fetch(url, {
+      method: "GET",
+      headers: getHeaders(),
+    });
+    if (!response.ok) throw new Error("Failed to load candidates pipeline");
+    return response.json();
+  },
+
+  async moveCandidate(payload: { pipeline_id: string; to_stage: string; notes?: string }) {
+    const response = await fetch(`${API_URL}/api/v1/pipeline/move`, {
+      method: "POST",
+      headers: getHeaders(),
+      body: JSON.stringify(payload),
+    });
+    if (!response.ok) {
+      const err = await response.json();
+      throw new Error(err.detail || "Failed to move candidate to target stage");
+    }
+    return response.json();
+  },
+
+  async getCandidateTimeline(pipelineId: string) {
+    const response = await fetch(`${API_URL}/api/v1/pipeline/${pipelineId}/timeline`, {
+      method: "GET",
+      headers: getHeaders(),
+    });
+    if (!response.ok) throw new Error("Failed to retrieve candidate activity logs");
+    return response.json();
+  },
+
+  async searchCandidates(filters: {
+    job_id?: string;
+    query?: string;
+    skills?: string;
+    min_experience?: number;
+    max_experience?: number;
+    location?: string;
+    min_ats?: number;
+    min_jd_match?: number;
+    sort_by?: string;
+  } = {}) {
+    const params = new URLSearchParams();
+    Object.entries(filters).forEach(([key, val]) => {
+      if (val !== undefined && val !== null && val !== "") {
+        params.append(key, String(val));
+      }
+    });
+
+    const response = await fetch(`${API_URL}/api/v1/candidates/search?${params.toString()}`, {
+      method: "GET",
+      headers: getHeaders(),
+    });
+    if (!response.ok) throw new Error("Candidate talent search failed");
+    return response.json();
+  },
+
+  async compareCandidates(payload: { job_id: string; pipeline_ids: string[] }) {
+    const response = await fetch(`${API_URL}/api/v1/candidates/compare`, {
+      method: "POST",
+      headers: getHeaders(),
+      body: JSON.stringify(payload),
+    });
+    if (!response.ok) throw new Error("Failed to compile candidate comparison analysis");
+    return response.json();
+  },
+
+  async generateInterviewKit(payload: { job_id: string; resume_id: string }) {
+    const response = await fetch(`${API_URL}/api/v1/interview-kit/generate`, {
+      method: "POST",
+      headers: getHeaders(),
+      body: JSON.stringify(payload),
+    });
+    if (!response.ok) throw new Error("Failed to generate interviewer guide pack");
+    return response.json();
+  },
+
+  async addCandidateNote(payload: { pipeline_id: string; content: string }) {
+    const response = await fetch(`${API_URL}/api/v1/notes`, {
+      method: "POST",
+      headers: getHeaders(),
+      body: JSON.stringify(payload),
+    });
+    if (!response.ok) throw new Error("Failed to post note comment");
+    return response.json();
+  },
+
+  async getCandidateNotes(candidateId: string) {
+    const response = await fetch(`${API_URL}/api/v1/notes/${candidateId}`, {
+      method: "GET",
+      headers: getHeaders(),
+    });
+    if (!response.ok) throw new Error("Failed to load candidate note timeline");
+    return response.json();
+  },
+
+  async addCandidateFeedback(payload: { pipeline_id: string; score: number; feedback_text?: string }) {
+    const response = await fetch(`${API_URL}/api/v1/feedback`, {
+      method: "POST",
+      headers: getHeaders(),
+      body: JSON.stringify(payload),
+    });
+    if (!response.ok) throw new Error("Failed to post interviewer feedback");
+    return response.json();
+  },
+
+  async getRecruiterAnalytics() {
+    const response = await fetch(`${API_URL}/api/v1/analytics/recruiter`, {
+      method: "GET",
+      headers: getHeaders(),
+    });
+    if (!response.ok) throw new Error("Failed to fetch recruiter dashboard analytics");
+    return response.json();
+  },
+
+  async chatRecopilot(payload: { message: string; history: any[]; selected_job_id?: string }) {
+    const response = await fetch(`${API_URL}/api/v1/recruiter/chat`, {
+      method: "POST",
+      headers: getHeaders(),
+      body: JSON.stringify(payload),
+    });
+    if (!response.ok) throw new Error("AI copilot chat query failed");
+    return response.json();
+  },
 };

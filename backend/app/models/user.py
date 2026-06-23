@@ -22,6 +22,7 @@ class User(Base):
     resumes = relationship("Resume", back_populates="user", cascade="all, delete-orphan")
     jds = relationship("JobDescription", back_populates="creator", cascade="all, delete-orphan")
     recruiter_uploads = relationship("RecruiterUpload", back_populates="recruiter", cascade="all, delete-orphan")
+    jobs = relationship("Job", back_populates="recruiter", cascade="all, delete-orphan")
     # Phase 2 relationships
     resume_versions = relationship("ResumeVersion", back_populates="user", cascade="all, delete-orphan")
     interview_sessions = relationship("InterviewSession", back_populates="user", cascade="all, delete-orphan")

@@ -22,3 +22,11 @@ class User(Base):
     resumes = relationship("Resume", back_populates="user", cascade="all, delete-orphan")
     jds = relationship("JobDescription", back_populates="creator", cascade="all, delete-orphan")
     recruiter_uploads = relationship("RecruiterUpload", back_populates="recruiter", cascade="all, delete-orphan")
+    # Phase 2 relationships
+    resume_versions = relationship("ResumeVersion", back_populates="user", cascade="all, delete-orphan")
+    interview_sessions = relationship("InterviewSession", back_populates="user", cascade="all, delete-orphan")
+    skill_gap_analyses = relationship("SkillGapAnalysis", back_populates="user", cascade="all, delete-orphan")
+    career_roadmaps = relationship("CareerRoadmap", back_populates="user", cascade="all, delete-orphan")
+    job_applications = relationship("JobApplication", back_populates="user", cascade="all, delete-orphan")
+    coach_conversations = relationship("CoachConversation", back_populates="user", cascade="all, delete-orphan")
+

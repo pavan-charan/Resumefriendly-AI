@@ -40,6 +40,8 @@ services:
       - CHROMADB_HOST=chroma_db
       - CHROMADB_PORT=8000
       - UPLOAD_DIR=/workspace/uploads
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY:-}
+      - OPENROUTER_MODEL=${OPENROUTER_MODEL:-openai/gpt-4o}
     volumes:
       - uploads_data:/workspace/uploads
     depends_on:

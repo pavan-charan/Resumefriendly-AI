@@ -21,3 +21,10 @@ class Resume(Base):
     ats_result = relationship("ATSResult", back_populates="resume", uselist=False, cascade="all, delete-orphan")
     jd_matches = relationship("JDMatch", back_populates="resume", cascade="all, delete-orphan")
     recruiter_uploads = relationship("RecruiterUpload", back_populates="resume", cascade="all, delete-orphan")
+    # Phase 2 relationships
+    versions = relationship("ResumeVersion", back_populates="resume", cascade="all, delete-orphan")
+    interview_sessions = relationship("InterviewSession", back_populates="resume", cascade="all, delete-orphan")
+    skill_gap_analyses = relationship("SkillGapAnalysis", back_populates="resume", cascade="all, delete-orphan")
+    career_roadmaps = relationship("CareerRoadmap", back_populates="resume", cascade="all, delete-orphan")
+    coach_conversations = relationship("CoachConversation", back_populates="resume", cascade="all, delete-orphan")
+

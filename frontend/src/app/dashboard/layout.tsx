@@ -6,7 +6,8 @@ import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { 
   Brain, FileText, CheckSquare, Settings, LogOut, Menu, X, 
-  Bell, Sun, Moon, Loader2, Sparkles, User as UserIcon
+  Bell, Sun, Moon, Loader2, Sparkles, User as UserIcon,
+  PenTool, MessageSquare, BarChart3, Map, ClipboardList, Briefcase, Bot
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -95,6 +96,13 @@ export default function DashboardLayout({
     : [
         { name: "ATS Optimizer", href: "/dashboard/candidate?tab=ats", icon: FileText, activeKey: "ats" },
         { name: "JD Matcher", href: "/dashboard/candidate?tab=jd", icon: Brain, activeKey: "jd" },
+        { name: "AI Rewriter", href: "/dashboard/candidate?tab=rewriter", icon: PenTool, activeKey: "rewriter" },
+        { name: "Interview Prep", href: "/dashboard/candidate?tab=interview", icon: MessageSquare, activeKey: "interview" },
+        { name: "Skill Gap", href: "/dashboard/candidate?tab=skills", icon: BarChart3, activeKey: "skills" },
+        { name: "Career Roadmap", href: "/dashboard/candidate?tab=roadmap", icon: Map, activeKey: "roadmap" },
+        { name: "App Tracker", href: "/dashboard/candidate?tab=tracker", icon: ClipboardList, activeKey: "tracker" },
+        { name: "Job Match", href: "/dashboard/candidate?tab=jobs", icon: Briefcase, activeKey: "jobs" },
+        { name: "AI Coach", href: "/dashboard/candidate?tab=coach", icon: Bot, activeKey: "coach" },
         { name: "Settings", href: "#", icon: Settings },
       ];
 

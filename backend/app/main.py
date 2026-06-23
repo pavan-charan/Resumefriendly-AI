@@ -5,8 +5,15 @@ import uvicorn
 from app.core.config import settings
 from app.core.database import engine, Base
 # Import models to ensure they are registered during table creation
-from app.models import user, resume, jd, ats_result, jd_match, recruiter_upload
+from app.models import (
+    user, resume, jd, ats_result, jd_match, recruiter_upload,
+    resume_version, interview, skill_gap, career_roadmap, job_application, coach
+)
+# Phase 1 routers
 from app.api.v1 import auth, resumes, ats, jds, recruiter
+# Phase 2 routers
+from app.api.v1 import rewriter, interview as interview_api, skill_gap as skill_gap_api
+from app.api.v1 import roadmap, tracker, job_match, coach as coach_api
 
 # Initialize database schema tables
 try:
@@ -17,8 +24,8 @@ except Exception as e:
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
-    description="AI-Powered Resume Screening and ATS Optimization Platform API Engine.",
-    version="1.0.0"
+    description="AI-Powered Resume Screening, ATS Optimization, and Career Growth Platform API.",
+    version="2.0.0"
 )
 
 app.add_middleware(
@@ -32,12 +39,21 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Mount Routers
+# Phase 1 Routers
 app.include_router(auth.router, prefix="/api/v1")
 app.include_router(resumes.router, prefix="/api/v1")
 app.include_router(ats.router, prefix="/api/v1")
 app.include_router(jds.router, prefix="/api/v1")
 app.include_router(recruiter.router, prefix="/api/v1")
+
+# Phase 2 Routers
+app.include_router(rewriter.router, prefix="/api/v1")
+app.include_router(interview_api.router, prefix="/api/v1")
+app.include_router(skill_gap_api.router, prefix="/api/v1")
+app.include_router(roadmap.router, prefix="/api/v1")
+app.include_router(tracker.router, prefix="/api/v1")
+app.include_router(job_match.router, prefix="/api/v1")
+app.include_router(coach_api.router, prefix="/api/v1")
 
 @app.get("/")
 def read_root():
@@ -45,7 +61,7 @@ def read_root():
         "status": "healthy",
         "app": settings.PROJECT_NAME,
         "docs_url": "/docs",
-        "version": "1.0.0"
+        "version": "2.0.0"
     }
 
 if __name__ == "__main__":

@@ -118,4 +118,10 @@ Run the diagnostic and validation tests locally or inside the backend docker con
    # Inside backend docker container
    docker exec -it resumefriendly_backend python scratch/verify_backend.py
    ```
+3. **Advanced Recruiter Workflows**:
+   Validate job creations, pipeline transitions, collaborator comments, feedback scores, comparisons, kit generations, and the Recopilot chat assistant interface:
+   ```bash
+   # Inside backend docker container
+   docker exec -it resumefriendly_backend python scratch/verify_recruiter_workflow.py
+   ```
 

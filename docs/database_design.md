@@ -156,6 +156,113 @@ erDiagram
         timestamp created_at
     }
 
+    JOBS {
+        uuid id PK
+        uuid recruiter_id FK "References USERS(id)"
+        string title
+        string department
+        string employment_type
+        string experience_required
+        string location
+        string salary_range
+        text description
+        string status
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    JOB_SKILLS {
+        uuid id PK
+        uuid job_id FK "References JOBS(id)"
+        string skill_name
+        boolean is_required
+    }
+
+    TEAM_MEMBERS {
+        uuid id PK
+        uuid job_id FK "References JOBS(id)"
+        uuid user_id FK "References USERS(id)"
+        string role
+        timestamp added_at
+    }
+
+    CANDIDATE_PIPELINE {
+        uuid id PK
+        uuid job_id FK "References JOBS(id)"
+        uuid resume_id FK "References RESUMES(id)"
+        string stage
+        integer ats_score
+        integer jd_match_score
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    CANDIDATE_STAGE_HISTORY {
+        uuid id PK
+        uuid pipeline_id FK "References CANDIDATE_PIPELINE(id)"
+        string from_stage
+        string to_stage
+        uuid moved_by FK "References USERS(id)"
+        timestamp moved_at
+        text notes
+    }
+
+    CANDIDATE_NOTES {
+        uuid id PK
+        uuid pipeline_id FK "References CANDIDATE_PIPELINE(id)"
+        uuid recruiter_id FK "References USERS(id)"
+        text content
+        timestamp created_at
+    }
+
+    CANDIDATE_FEEDBACK {
+        uuid id PK
+        uuid pipeline_id FK "References CANDIDATE_PIPELINE(id)"
+        uuid interviewer_id FK "References USERS(id)"
+        integer score
+        text feedback_text
+        timestamp created_at
+    }
+
+    CANDIDATE_COMPARISONS {
+        uuid id PK
+        uuid job_id FK "References JOBS(id)"
+        jsonb candidate_ids
+        text ai_summary
+        text best_candidate_recommendation
+        timestamp created_at
+    }
+
+    INTERVIEW_KITS {
+        uuid id PK
+        uuid job_id FK "References JOBS(id)"
+        uuid resume_id FK "References RESUMES(id)"
+        jsonb technical_questions
+        jsonb behavioral_questions
+        jsonb scenario_questions
+        jsonb role_specific_questions
+        text evaluation_rubric
+        text scoring_template
+        text interviewer_notes
+        timestamp created_at
+    }
+
+    RECRUITER_ANALYTICS {
+        uuid id PK
+        uuid recruiter_id FK "References USERS(id)"
+        string metric_name
+        float metric_value
+        timestamp recorded_at
+    }
+
+    ACTIVITY_LOGS {
+        uuid id PK
+        uuid user_id FK "References USERS(id)"
+        string action_type
+        text details
+        timestamp created_at
+    }
+
     USERS ||--o{ RESUMES : "uploads"
     USERS ||--o{ JOB_DESCRIPTIONS : "creates"
     USERS ||--o{ RECRUITER_UPLOADS : "batch_uploads"
@@ -172,6 +279,20 @@ erDiagram
     USERS ||--o{ JOB_APPLICATIONS : "tracks"
     USERS ||--o{ COACH_CONVERSATIONS : "starts"
     COACH_CONVERSATIONS ||--o{ COACH_MESSAGES : "sends"
+    USERS ||--o{ JOBS : "manages"
+    JOBS ||--o{ JOB_SKILLS : "specifies"
+    JOBS ||--o{ TEAM_MEMBERS : "shares_with"
+    USERS ||--o{ TEAM_MEMBERS : "collaborates_on"
+    JOBS ||--o{ CANDIDATE_PIPELINE : "screens_for"
+    RESUMES ||--o{ CANDIDATE_PIPELINE : "placed_in"
+    CANDIDATE_PIPELINE ||--o{ CANDIDATE_STAGE_HISTORY : "tracks_history"
+    CANDIDATE_PIPELINE ||--o{ CANDIDATE_NOTES : "gathers_notes"
+    CANDIDATE_PIPELINE ||--o{ CANDIDATE_FEEDBACK : "gathers_feedback"
+    JOBS ||--o{ CANDIDATE_COMPARISONS : "compares_candidates"
+    JOBS ||--o{ INTERVIEW_KITS : "requires_kits"
+    RESUMES ||--o{ INTERVIEW_KITS : "evaluated_by_kits"
+    USERS ||--o{ RECRUITER_ANALYTICS : "measures_performance"
+    USERS ||--o{ ACTIVITY_LOGS : "logs_activities"
 ```
 
 ---
@@ -326,6 +447,113 @@ Detailed chat thread transcripts.
 - `content`: `TEXT` (Not Null)
 - `created_at`: `TIMESTAMP WITH TIME ZONE` (default: `NOW()`)
 
+### 2.15 JOBS
+Stores comprehensive job opening configurations.
+- `id`: `UUID` (Primary Key, default: `gen_random_uuid()`)
+- `recruiter_id`: `UUID` (Foreign Key -> `USERS(id)`, Cascade Delete, Not Null)
+- `title`: `VARCHAR(255)` (Not Null)
+- `department`: `VARCHAR(255)` (Nullable)
+- `employment_type`: `VARCHAR(100)` (Nullable, e.g., 'Full-time', 'Part-time')
+- `experience_required`: `VARCHAR(100)` (Nullable)
+- `location`: `VARCHAR(255)` (Nullable)
+- `salary_range`: `VARCHAR(100)` (Nullable)
+- `description`: `TEXT` (Nullable)
+- `status`: `VARCHAR(50)` (Not Null, default: `'Active'`)
+- `created_at`: `TIMESTAMP WITH TIME ZONE` (default: `NOW()`)
+- `updated_at`: `TIMESTAMP WITH TIME ZONE` (default: `NOW()`)
+
+### 2.16 JOB_SKILLS
+Skills requested by a specific job profile.
+- `id`: `UUID` (Primary Key, default: `gen_random_uuid()`)
+- `job_id`: `UUID` (Foreign Key -> `JOBS(id)`, Cascade Delete, Not Null)
+- `skill_name`: `VARCHAR(100)` (Not Null)
+- `is_required`: `BOOLEAN` (Not Null, default: `True`)
+
+### 2.17 TEAM_MEMBERS
+Recruiter collaboration sharing map.
+- `id`: `UUID` (Primary Key, default: `gen_random_uuid()`)
+- `job_id`: `UUID` (Foreign Key -> `JOBS(id)`, Cascade Delete, Not Null)
+- `user_id`: `UUID` (Foreign Key -> `USERS(id)`, Cascade Delete, Not Null)
+- `role`: `VARCHAR(100)` (Not Null)
+- `added_at`: `TIMESTAMP WITH TIME ZONE` (default: `NOW()`)
+
+### 2.18 CANDIDATE_PIPELINE
+Tracks candidates mapped to jobs along with hiring pipeline stages.
+- `id`: `UUID` (Primary Key, default: `gen_random_uuid()`)
+- `job_id`: `UUID` (Foreign Key -> `JOBS(id)`, Cascade Delete, Not Null)
+- `resume_id`: `UUID` (Foreign Key -> `RESUMES(id)`, Cascade Delete, Not Null)
+- `stage`: `VARCHAR(100)` (Not Null, default: `'Applied'`)
+- `ats_score`: `INTEGER` (Nullable)
+- `jd_match_score`: `INTEGER` (Nullable)
+- `created_at`: `TIMESTAMP WITH TIME ZONE` (default: `NOW()`)
+- `updated_at`: `TIMESTAMP WITH TIME ZONE` (default: `NOW()`)
+
+### 2.19 CANDIDATE_STAGE_HISTORY
+Chronological logging of candidate movements across pipeline stages.
+- `id`: `UUID` (Primary Key, default: `gen_random_uuid()`)
+- `pipeline_id`: `UUID` (Foreign Key -> `CANDIDATE_PIPELINE(id)`, Cascade Delete, Not Null)
+- `from_stage`: `VARCHAR(100)` (Not Null)
+- `to_stage`: `VARCHAR(100)` (Not Null)
+- `moved_by`: `UUID` (Foreign Key -> `USERS(id)`, Set Null, Nullable)
+- `moved_at`: `TIMESTAMP WITH TIME ZONE` (default: `NOW()`)
+- `notes`: `TEXT` (Nullable)
+
+### 2.20 CANDIDATE_NOTES
+Internal collaboration comments on candidates.
+- `id`: `UUID` (Primary Key, default: `gen_random_uuid()`)
+- `pipeline_id`: `UUID` (Foreign Key -> `CANDIDATE_PIPELINE(id)`, Cascade Delete, Not Null)
+- `recruiter_id`: `UUID` (Foreign Key -> `USERS(id)`, Cascade Delete, Not Null)
+- `content`: `TEXT` (Not Null)
+- `created_at`: `TIMESTAMP WITH TIME ZONE` (default: `NOW()`)
+
+### 2.21 CANDIDATE_FEEDBACK
+Evaluation and ratings logged by interviewers.
+- `id`: `UUID` (Primary Key, default: `gen_random_uuid()`)
+- `pipeline_id`: `UUID` (Foreign Key -> `CANDIDATE_PIPELINE(id)`, Cascade Delete, Not Null)
+- `interviewer_id`: `UUID` (Foreign Key -> `USERS(id)`, Cascade Delete, Not Null)
+- `score`: `INTEGER` (Not Null - rating 1-5)
+- `feedback_text`: `TEXT` (Nullable)
+- `created_at`: `TIMESTAMP WITH TIME ZONE` (default: `NOW()`)
+
+### 2.22 CANDIDATE_COMPARISONS
+Persisted side-by-side AI evaluation sessions.
+- `id`: `UUID` (Primary Key, default: `gen_random_uuid()`)
+- `job_id`: `UUID` (Foreign Key -> `JOBS(id)`, Cascade Delete, Not Null)
+- `candidate_ids`: `JSONB` (Not Null - list of candidate UUIDs)
+- `ai_summary`: `TEXT` (Nullable)
+- `best_candidate_recommendation`: `TEXT` (Nullable)
+- `created_at`: `TIMESTAMP WITH TIME ZONE` (default: `NOW()`)
+
+### 2.23 INTERVIEW_KITS
+Structured candidate/job evaluation kits with questions.
+- `id`: `UUID` (Primary Key, default: `gen_random_uuid()`)
+- `job_id`: `UUID` (Foreign Key -> `JOBS(id)`, Cascade Delete, Not Null)
+- `resume_id`: `UUID` (Foreign Key -> `RESUMES(id)`, Cascade Delete, Not Null)
+- `technical_questions`: `JSONB` (Nullable)
+- `behavioral_questions`: `JSONB` (Nullable)
+- `scenario_questions`: `JSONB` (Nullable)
+- `role_specific_questions`: `JSONB` (Nullable)
+- `evaluation_rubric`: `TEXT` (Nullable)
+- `scoring_template`: `TEXT` (Nullable)
+- `interviewer_notes`: `TEXT` (Nullable)
+- `created_at`: `TIMESTAMP WITH TIME ZONE` (default: `NOW()`)
+
+### 2.24 RECRUITER_ANALYTICS
+Hiring metrics logs for analytics computations.
+- `id`: `UUID` (Primary Key, default: `gen_random_uuid()`)
+- `recruiter_id`: `UUID` (Foreign Key -> `USERS(id)`, Cascade Delete, Not Null)
+- `metric_name`: `VARCHAR(100)` (Not Null)
+- `metric_value`: `DOUBLE PRECISION` (Not Null)
+- `recorded_at`: `TIMESTAMP WITH TIME ZONE` (default: `NOW()`)
+
+### 2.25 ACTIVITY_LOGS
+Auditing logs of operations executed by recruiters and administrators.
+- `id`: `UUID` (Primary Key, default: `gen_random_uuid()`)
+- `user_id`: `UUID` (Foreign Key -> `USERS(id)`, Cascade Delete, Not Null)
+- `action_type`: `VARCHAR(100)` (Not Null)
+- `details`: `TEXT` (Nullable)
+- `created_at`: `TIMESTAMP WITH TIME ZONE` (default: `NOW()`)
+
 ---
 
 ## 3. Indexing & Optimization Strategy
@@ -342,7 +570,18 @@ To maintain sub-second queries for active dashboards as files and users scale, w
    - `idx_interview_questions_session` ON `interview_questions(session_id)`: Quick retrieval of chat/interview Q&As.
    - `idx_job_applications_user` ON `job_applications(user_id, status)`: Optimization for candidate Kanban tracker pipelines.
    - `idx_coach_messages_convo` ON `coach_messages(conversation_id, created_at)`: Speed up active chat scroll loading.
+   - `idx_jobs_recruiter_id` ON `jobs(recruiter_id)`: Optimized listing of recruiter jobs.
+   - `idx_job_skills_job_id` ON `job_skills(job_id)`: Fast skills lookup for a specific job opening.
+   - `idx_candidate_pipeline_job_id` ON `candidate_pipeline(job_id)`: Speeds up rendering Kanban stage pipelines.
+   - `idx_candidate_pipeline_resume_id` ON `candidate_pipeline(resume_id)`: Speeds up fetching pipeline records for a single candidate.
+   - `idx_candidate_stage_history_pipeline` ON `candidate_stage_history(pipeline_id)`: Quick timeline audit load times.
+   - `idx_candidate_notes_pipeline` ON `candidate_notes(pipeline_id)`: Fast loading of collaborator comments.
+   - `idx_candidate_feedback_pipeline` ON `candidate_feedback(pipeline_id)`: Speeds up fetching ratings.
+   - `idx_recruiter_analytics_recruiter` ON `recruiter_analytics(recruiter_id, metric_name)`: Quick extraction of recorded stats.
+   - `idx_activity_logs_user` ON `activity_logs(user_id)`: Audit trail dashboard retrieval speedups.
 
 2. **JSONB Indexing**:
    - `idx_resumes_skills` ON `resumes USING gin ((parsed_content -> 'skills'))`: Speeds up custom recruiter searches filtering resumes by exact skill tags.
+   - `idx_candidate_comparisons_ids` ON `candidate_comparisons USING gin (candidate_ids)`: Speed up active candidate comparison loads.
+   - `idx_interview_kits_job_resume` ON `interview_kits(job_id, resume_id)`: Fast loading of generated guides.
 

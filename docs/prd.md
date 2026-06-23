@@ -43,13 +43,23 @@ The hiring ecosystem suffers from two primary issues:
 - **JD Matching**: Candidates paste a target Job Description and receive a matching score, list of matching/missing skills, and custom optimization advice.
 - **Actionable Recommendations**: High-impact resume changes (e.g., adding metrics, rewriting weak summaries, inserting tools like AWS, Docker).
 
-### 4.2 Recruiter Features
+### 4.2 Recruiter Features (Phase 1)
 - **Job Description Upload**: Dashboard panel to submit Job Title, Company, and Job Description text.
 - **Multi-Resume Upload**: Drag-and-drop area to upload multiple candidate resumes (PDF/DOCX) in a single batch.
 - **Ranked Candidates List**: Ranks the batch based on semantic similarity to the Job Description, displaying name, score, and contact details.
 - **Candidate Summary Generator**: Extracts highlights of experience, key skills, education, and match statistics in an easy-to-read recruiter profile card.
 
-### 4.3 Career Growth Platform (Phase 2)
+### 4.3 Recruiter Management Platform (Phase 2)
+- **Job Openings Management**: Configure comprehensive job profiles (title, employment type, location, experience requirements, salary range, description) and specify required and preferred skills. Collaborate with other team members (recruiters, hiring managers).
+- **Kanban Hiring Pipeline**: Track candidates across standard hiring stages (Applied, Screening, Shortlisted, Interview Scheduled, Technical Round, Manager Round, HR Round, Offer, Hired, Rejected). Automatically record movement timestamps and Stage Transition Histories.
+- **Advanced Candidate Search**: Search and filter candidate database profiles using parameters like skills, years of experience, locations, minimum ATS scores, and minimum JD match values.
+- **Candidate Comparisons**: Cross-evaluate and compare selected candidates side-by-side on skills, experience highlights, and educational backgrounds, supplemented by AI-generated comparison summaries and recommendations.
+- **Structured Interview Kits**: Automatically generate candidate-specific and job-tailored interview kits, including behavioral, technical, scenario, and role-specific questions, evaluation rubrics, and print-ready templates.
+- **Collaboration & Logs**: Log recruiter notes and candidate feedback metrics. Audit user activity logs (`activity_logs`) across operations like job creation, pipeline progression updates, and notes attachments.
+- **Recruiter Hiring Analytics**: Monitor aggregate metrics, pipeline conversion rates, active jobs counts, total candidate count, and visual SVG charts showing stage conversions and funnel statistics.
+- **AI Recopilot Chat Assistant**: An interactive assistant loaded with job requirements and candidate profiles context, facilitating natural language queries to retrieve, filter, and review profiles.
+
+### 4.4 Candidate Career Growth Platform (Phase 2)
 - **AI Resume Rewriter**: Enhances parsed sections (summaries, bullet points) using LLMs with customizable tones (Professional, Executive, Technical, Creative) and focus areas, persisting versions.
 - **Interview Prep Engine**: Generates role-specific behavioral, technical, and situational mock interview questions and rates candidate answers on a 0-10 scale using the STAR (Situation, Task, Action, Result) method.
 - **Skill Gap Analysis**: Compares candidate's skills against industry standards for target roles, assessing proficiency level gaps, readiness scores, and learning resources.
@@ -78,11 +88,15 @@ The hiring ecosystem suffers from two primary issues:
 
 ### Recruiter Flow
 1. Register/Login -> Select role "Recruiter" -> Recruiter Dashboard.
-2. Click "Create Job Post" -> Enter details and JD text.
-3. Drag-and-drop 10+ resumes -> Backend processes files, computes embeddings, index in ChromaDB.
-4. View Ranked List -> Order by Cosine Similarity.
-5. Click Candidate name -> View detailed Candidate Summary (Skills, Experience years, education background, score).
-6. Click "Export" -> Generate and download a comprehensive CSV candidate list containing detailed profiles, extracted schools, start/end graduation years, and match scores.
+2. **Job Post Management**: Click "Create Job Post" -> Enter full configurations (title, location, salary, required/preferred skills, etc.) -> Saved in `jobs` database table.
+3. **Pipeline Board**: Drag-and-drop resumes into a job to parse them and automatically add candidates to the Kanban board (`Applied` stage).
+4. **Kanban Pipeline Operations**: Move candidate cards across stages (Applied, Screening, Shortlisted, Interview Scheduled, etc.). Click a candidate to open their detail drawer, showing timeline transition logs, attaching notes, and recording interview feedback scores.
+5. **Talent Search**: Navigate to "Talent Search" -> Query the database by candidate name, skills, location, or match scores to find fitting profiles.
+6. **Candidate Comparisons**: Select up to 3 candidates -> Click "Compare Candidates" -> View side-by-side matrices and AI evaluations.
+7. **Interview Kits**: Click "Generate Interview Kit" on a candidate profile -> AI generates tailored questions and evaluation templates. Click "Print" to export to physical or PDF formats.
+8. **Hiring Analytics**: Check the "Analytics" tab to inspect aggregate performance, funnel conversion charts, and activity streams.
+9. **Recopilot Chat**: Ask the AI Recopilot overlay (e.g., "Summarize the top candidate for this role") for instant hiring answers.
+10. Click "Export CSV" -> Download ranked CSV records of all candidate profiles.
 
 ---
 

@@ -16,7 +16,10 @@ backend/app/
 │       ├── resumes.py        # Resume uploads and metadata lookups
 │       ├── ats.py            # ATS score calculation triggers
 │       ├── jds.py            # JD creations and resume JD matching
-│       └── recruiter.py      # Recruiter dashboard features (batch screening)
+│       ├── jobs.py           # Job management CRUD APIs (Phase 2)
+│       ├── pipeline.py       # Kanban hiring pipeline & timeline APIs (Phase 2)
+│       ├── recruiter.py      # Recruiter batch screening (Phase 1)
+│       └── recruiter_endpoints.py # Advanced Recruiter Workflows & Recopilot (Phase 2)
 ├── core/
 │   ├── config.py             # App environment variables & parameters
 │   ├── database.py           # SQLAlchemy engines and session pools
@@ -28,7 +31,13 @@ backend/app/
 │   ├── jd.py
 │   ├── ats_result.py
 │   ├── jd_match.py
-│   └── recruiter_upload.py
+│   ├── recruiter_upload.py
+│   ├── job.py                # Job specification, skills, team members tables (Phase 2)
+│   ├── pipeline.py           # Kanban Pipeline stage, history, notes, feedback (Phase 2)
+│   ├── comparison.py         # AI candidate comparison sessions table (Phase 2)
+│   ├── interview_kit.py      # AI structured interview kits table (Phase 2)
+│   ├── recruiter_analytics.py # Performance metrics tracking table (Phase 2)
+│   └── activity_log.py       # Audit trail logger table (Phase 2)
 ├── repositories/             # Relational Database Access layer (CRUD)
 │   ├── user.py
 │   ├── resume.py
@@ -39,13 +48,20 @@ backend/app/
 │   ├── resume.py
 │   ├── jd.py
 │   ├── ats.py
-│   └── recruiter.py
+│   ├── recruiter.py
+│   ├── jobs.py               # Job request & response Pydantic schemas (Phase 2)
+│   ├── pipeline.py           # Stage movement & notes schema validations (Phase 2)
+│   └── recruiter_workflow.py # Comparisons, kits, chat request schemas (Phase 2)
 ├── services/                 # Core business & processing logic
 │   ├── auth_service.py       # Authentication logic
 │   ├── parser_service.py     # Document text parsing and regex info extraction
 │   ├── ats_scorer.py         # Breakdown score algorithms
 │   ├── matching_service.py   # Embeddings comparisons via Sentence Transformers
-│   └── recruiter_service.py  # Ranked queues screening
+│   ├── recruiter_service.py  # Ranked queues screening (Phase 1)
+│   ├── job_service.py        # Job configurations & dashboard stats service (Phase 2)
+│   ├── pipeline_service.py   # Kanban board card movements & note logging (Phase 2)
+│   ├── recruiter_ai_service.py # AI evaluations, comparisons, kits, Recopilot chat (Phase 2)
+│   └── analytics_service.py  # Aggregate metrics & stage conversion funnels (Phase 2)
 ├── utils/                    # Common helper utilities
 └── main.py                   # App entrypoint and CORS setups
 ```
@@ -81,9 +97,11 @@ We enforce standard patterns to ensure clean, mockable logic:
 
 ---
 
-## 4. Phase 2 Career Growth Services
+## 4. Phase 2 Services
 
-Phase 2 introduces pluggable AI and management logic built on a unified LLM interface:
+Phase 2 introduces pluggable AI and workflows for both Candidate Career Growth and Recruiter Management:
+
+### 4.1 Career Growth Services
 
 1. **LLM Provider Abstraction (`llm_provider.py`)**:
    - Outlines an abstract base `LLMProvider` class defining the standard text generation signature: `generate(prompt, system_prompt, temperature, max_tokens, json_mode)`.
@@ -111,6 +129,28 @@ Phase 2 introduces pluggable AI and management logic built on a unified LLM inte
 
 8. **Coach Service (`coach_service.py`)**:
    - Maintains messaging history to simulate a conversational career advisor, passing user resume context to guide all conversations.
+
+### 4.2 Recruiter Advanced Workflow Services
+
+1. **Job Service (`job_service.py`)**:
+   - Manages job openings CRUD, adds skills mappings, and associates team members (collaborators).
+   - Generates summary statistics of jobs counts (active, draft, total candidate count) for the recruiter dashboard.
+
+2. **Pipeline Service (`pipeline_service.py`)**:
+   - Handles the Kanban card stage movements and checks recruiter ownership.
+   - Saves stage transition logs to candidate stage history.
+   - Records reviewer comments (candidate notes) and interviewer rating scores (candidate feedback).
+   - Returns a structured timeline of stage logs, notes, and feedback.
+
+3. **Recruiter AI Service (`recruiter_ai_service.py`)**:
+   - Generates candidate insights (fit reasons, flags, confidence score, hiring recommendation) utilizing OpenRouter.
+   - Evaluates and compares multiple candidates side-by-side on skills, experience, and education, generating an AI summary recommendation.
+   - Assembles tailor-made, candidate-specific interview kits containing behavioral/technical question groups, rubrics, and evaluation forms.
+   - Powers the AI Recopilot chat assistant using a custom system prompt containing all available candidate profiles and job details.
+
+4. **Analytics Service (`analytics_service.py`)**:
+   - Measures candidate conversion rates, calculates average days spent in pipeline stages, and counts candidate allocations.
+   - Formulates aggregate funnel statistics and returns timeline arrays for visualization in Next.js.
 
 ---
 

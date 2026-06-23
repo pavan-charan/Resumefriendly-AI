@@ -29,7 +29,7 @@ graph TD
 
 ## 2. Component Diagram
 
-The backend system is structured following Clean Architecture principles, enhanced with the pluggable AI Career Services layer:
+The backend system is structured following Clean Architecture principles, enhanced with the pluggable AI Career Services and Recruiter Advanced Workflow layers:
 
 ```mermaid
 graph TB
@@ -46,6 +46,9 @@ graph TB
         A10[Tracker Router]
         A11[Job Match Router]
         A12[Coach Router]
+        A13[Jobs Router]
+        A14[Pipeline Router]
+        A15[Recruiter Advanced Router]
     end
 
     subgraph Service Layer (Business Logic)
@@ -61,6 +64,10 @@ graph TB
         S10[Tracker Service]
         S11[Job Match Service]
         S12[Coach Service]
+        S13[Job Service]
+        S14[Pipeline Service]
+        S15[Recruiter AI Service]
+        S16[Analytics Service]
         LLM[LLM Provider Factory]
     end
 
@@ -76,6 +83,7 @@ graph TB
         R9[Roadmap Repository]
         R10[Application Repository]
         R11[Coach Conversation Repository]
+        R12[Direct ORM Models - Jobs/Pipeline/Analytics]
     end
 
     subgraph Data & Storage Layer
@@ -97,6 +105,10 @@ graph TB
     A10 --> S10
     A11 --> S11
     A12 --> S12
+    A13 --> S13
+    A14 --> S14
+    A15 --> S15
+    A15 --> S16
 
     S1 --> R1
     S2 --> R2
@@ -105,7 +117,7 @@ graph TB
     S4 --> R5
     S5 --> R3
     S5 --> R2
-    S6 & S7 & S8 & S9 & S12 --> LLM
+    S6 & S7 & S8 & S9 & S12 & S15 --> LLM
     S6 --> R6
     S7 --> R7
     S8 --> R8
@@ -113,8 +125,9 @@ graph TB
     S10 --> R10
     S11 --> S4
     S12 --> R11
+    S13 & S14 & S15 & S16 --> R12
 
-    R1 & R2 & R3 & R4 & R5 & R6 & R7 & R8 & R9 & R10 & R11 --> D1
+    R1 & R2 & R3 & R4 & R5 & R6 & R7 & R8 & R9 & R10 & R11 & R12 --> D1
     S4 & S5 --> D2
     S2 --> D3
     LLM --> D4
@@ -225,5 +238,50 @@ sequenceDiagram
     IS->>DB: Save evaluation details & score for the question
     BE-->>FE: Return AI feedback details and score
     FE-->>Candidate: Display question score, strengths, and STAR recommendations
+```
+
+### 4.4 Recruiter Kanban Pipeline Stage Movement & History Log
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Recruiter
+    participant FE as Frontend (Next.js)
+    participant BE as Backend (FastAPI)
+    participant PS as Pipeline Service
+    participant DB as Database (Postgres)
+
+    Recruiter->>FE: Drag candidate card to new stage (e.g., Shortlisted)
+    FE->>BE: POST /api/v1/pipeline/move (pipeline_id, to_stage, notes)
+    BE->>PS: Move candidate
+    PS->>DB: Record Stage History & update stage in pipeline record
+    DB-->>PS: DB entries saved
+    PS-->>BE: Updated candidate pipeline entry
+    BE-->>FE: Return updated pipeline state
+    FE-->>Recruiter: Update Kanban board UI and refresh active indicators
+```
+
+### 4.5 AI Recopilot Conversational Assistant
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Recruiter
+    participant FE as Frontend (Next.js)
+    participant BE as Backend (FastAPI)
+    participant AS as Recruiter AI Service
+    participant LLM as LLM Provider (OpenRouter)
+    participant DB as Database (Postgres)
+
+    Recruiter->>FE: Open Chat Drawer and ask "Highlight candidate skill gaps for this job"
+    FE->>BE: POST /api/v1/recruiter/chat (message, history, selected_job_id)
+    BE->>AS: Handle copilot query
+    AS->>DB: Fetch job specifications & all candidate profiles in pipeline
+    DB-->>AS: Return database records
+    AS->>LLM: Prompt LLM with query + job schema + candidate profiles
+    LLM-->>AS: Natural language reply outlining gaps & evaluations
+    AS-->>BE: Return text response
+    BE-->>FE: Return bot reply (JSON)
+    FE-->>Recruiter: Render response bubble in chat timeline
 ```
 

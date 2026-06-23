@@ -108,3 +108,47 @@ The Candidate Workspace Dashboard is organized as an interactive multi-tab compo
    - Context panel referencing the candidate's active parsed resume.
    - Thread list enabling the candidate to manage multiple historic coaching discussions.
 
+---
+
+## 6. Phase 2 Recruiter Dashboard Tabs & Interfaces
+
+The Recruiter Workspace is structured as a feature-rich, high-performance web dashboard allowing recruiters to oversee entire hiring campaigns:
+
+1. **Job Specifications & Collaboration Interface**:
+   - Configuration forms for adding, editing, and listing active job openings (including location, salary, descriptions, and tag-input fields for required/preferred skills).
+   - Collaboration sub-sheets to list and manage internal team members (Hiring Managers, co-recruiters) assigned to each opening.
+
+2. **Interactive Kanban Pipeline Board**:
+   - Visual stage columns matching the hiring stages (Applied, Screening, Shortlisted, Interview Scheduled, Technical Round, Manager Round, HR Round, Offer, Hired, Rejected).
+   - Draggable candidate cards indicating name, match scores, primary skills, and contact highlights.
+   - On-click Candidate Detail Drawer rendering:
+     - **Profile Overview**: Extracted details of candidate's skills, experience, and education.
+     - **Stage Timeline Logs**: Audited transition history logs with timestamps and mover details.
+     - **Recruiter Notes**: Direct thread to write and read collaborator comments.
+     - **Interviewer Feedback**: Form to input rating scores (1-5) and structured interview details.
+     - **AI insights Panel**: Detailed AI-generated hiring recommendation, candidate strengths, and risk indicators.
+
+3. **Advanced Talent Database Search Layout**:
+   - Advanced search bar with multi-tag filtering (filter by skills, location, experience range, minimum ATS score, and minimum JD match score).
+   - Sorting controls to order candidate databases by highest ATS score, match score, experience years, or registration date.
+
+4. **Candidate Comparison Workspace**:
+   - Side-by-side matrices comparing up to 3 candidate profiles.
+   - Comparative cells evaluating skill counts, years of experience, and educational background.
+   - AI summary recommendation cards outlining the best fit and justification notes.
+
+5. **Print-Optimized Interview Kit Panel**:
+   - AI-generated question lists organized into Technical, Behavioral, and Scenario categories.
+   - Side-by-side evaluation rubrics, scoring templates, and interviewer note blocks.
+   - Dedicated print CSS templates enabling clean print-to-paper or save-as-PDF exports.
+
+6. **Analytics Dashboard Tab**:
+   - Quick statistics metric cards (total openings, total active candidates, conversion rate averages).
+   - Funnel conversion charts rendered via pure custom responsive SVGs, mapping candidate percentages dropping out at each hiring pipeline stage.
+   - Active collaboration logs tracing recent recruiter updates.
+
+7. **AI Recopilot Chat Drawer**:
+   - Floating collapsible chat panel accessible across the recruiter dashboard.
+   - Conversational prompt suggestions (e.g., "Find candidates with Docker", "Generate comparison summary").
+   - Smart context linking that feeds active job selections and pipeline candidate profiles directly to the conversational agent.
+

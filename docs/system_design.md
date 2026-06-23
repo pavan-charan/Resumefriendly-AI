@@ -29,7 +29,7 @@ graph TD
 
 ## 2. Component Diagram
 
-The backend system is structured following Clean Architecture principles:
+The backend system is structured following Clean Architecture principles, enhanced with the pluggable AI Career Services layer:
 
 ```mermaid
 graph TB
@@ -39,6 +39,13 @@ graph TB
         A3[ATS Router]
         A4[JD Router]
         A5[Recruiter Router]
+        A6[Rewriter Router]
+        A7[Interview Router]
+        A8[Skills Router]
+        A9[Roadmap Router]
+        A10[Tracker Router]
+        A11[Job Match Router]
+        A12[Coach Router]
     end
 
     subgraph Service Layer (Business Logic)
@@ -47,20 +54,35 @@ graph TB
         S3[ATS Scorer]
         S4[Matching Service]
         S5[Recruiter Service]
+        S6[Rewriter Service]
+        S7[Interview Service]
+        S8[Skill Gap Service]
+        S9[Roadmap Service]
+        S10[Tracker Service]
+        S11[Job Match Service]
+        S12[Coach Service]
+        LLM[LLM Provider Factory]
     end
 
-    subgraph Repository Layer (Data Access)
+    subgraph Repository & ORM Layer
         R1[User Repository]
         R2[Resume Repository]
         R3[JD Repository]
         R4[ATS Result Repository]
         R5[JD Match Repository]
+        R6[Resume Version Repository]
+        R7[Interview Session Repository]
+        R8[Skill Gap Repository]
+        R9[Roadmap Repository]
+        R10[Application Repository]
+        R11[Coach Conversation Repository]
     end
 
     subgraph Data & Storage Layer
         D1[(PostgreSQL)]
         D2[(ChromaDB)]
         D3[Local Files]
+        D4[OpenRouter API]
     end
 
     A1 --> S1
@@ -68,6 +90,13 @@ graph TB
     A3 --> S3
     A4 --> S4
     A5 --> S5
+    A6 --> S6
+    A7 --> S7
+    A8 --> S8
+    A9 --> S9
+    A10 --> S10
+    A11 --> S11
+    A12 --> S12
 
     S1 --> R1
     S2 --> R2
@@ -76,11 +105,21 @@ graph TB
     S4 --> R5
     S5 --> R3
     S5 --> R2
+    S6 & S7 & S8 & S9 & S12 --> LLM
+    S6 --> R6
+    S7 --> R7
+    S8 --> R8
+    S9 --> R9
+    S10 --> R10
+    S11 --> S4
+    S12 --> R11
 
-    R1 & R2 & R3 & R4 & R5 --> D1
+    R1 & R2 & R3 & R4 & R5 & R6 & R7 & R8 & R9 & R10 & R11 --> D1
     S4 & S5 --> D2
     S2 --> D3
+    LLM --> D4
 ```
+
 
 ---
 
@@ -156,3 +195,35 @@ sequenceDiagram
     BE-->>FE: Response payload
     FE-->>Recruiter: Display interactive Ranked list of candidates
 ```
+
+### 4.3 Candidate Mock Interview & AI Answer Evaluation
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Candidate
+    participant FE as Frontend (Next.js)
+    participant BE as Backend (FastAPI)
+    participant IS as Interview Service
+    participant LLM as LLM Provider (OpenRouter)
+    participant DB as Database (Postgres)
+
+    Candidate->>FE: Select target role, difficulty and click Start Mock Interview
+    FE->>BE: POST /api/v1/interview/start (role, difficulty, resume_id)
+    BE->>IS: Create session and generate questions
+    IS->>LLM: Request mock questions matching target role & candidate resume
+    LLM-->>IS: Question list (behavioral, technical, situational)
+    IS->>DB: Save session and generated questions
+    BE-->>FE: Return session details & questions JSON
+    FE-->>Candidate: Render first question and answer input field
+
+    Candidate->>FE: Submit answer for a question
+    FE->>BE: POST /api/v1/interview/answer/{question_id} (user_answer)
+    BE->>IS: Evaluate answer
+    IS->>LLM: Prompt answer evaluation (score 0-10, strengths, improvements using STAR method)
+    LLM-->>IS: STAR feedback analysis JSON
+    IS->>DB: Save evaluation details & score for the question
+    BE-->>FE: Return AI feedback details and score
+    FE-->>Candidate: Display question score, strengths, and STAR recommendations
+```
+

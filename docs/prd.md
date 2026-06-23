@@ -49,6 +49,15 @@ The hiring ecosystem suffers from two primary issues:
 - **Ranked Candidates List**: Ranks the batch based on semantic similarity to the Job Description, displaying name, score, and contact details.
 - **Candidate Summary Generator**: Extracts highlights of experience, key skills, education, and match statistics in an easy-to-read recruiter profile card.
 
+### 4.3 Career Growth Platform (Phase 2)
+- **AI Resume Rewriter**: Enhances parsed sections (summaries, bullet points) using LLMs with customizable tones (Professional, Executive, Technical, Creative) and focus areas, persisting versions.
+- **Interview Prep Engine**: Generates role-specific behavioral, technical, and situational mock interview questions and rates candidate answers on a 0-10 scale using the STAR (Situation, Task, Action, Result) method.
+- **Skill Gap Analysis**: Compares candidate's skills against industry standards for target roles, assessing proficiency level gaps, readiness scores, and learning resources.
+- **Career Roadmap Generator**: Creates interactive milestone-based career progression roadmaps based on timeline choices (months) and target roles.
+- **Job Application Tracker**: Full CRUD dashboard tracking application pipelines across Kanban status lanes (Applied, Screening, Interviewing, Offer, Rejected, Accepted).
+- **Job Match Dashboard**: Matches candidate profiles against live recruiter jobs using ChromaDB vector database index.
+- **AI Career Coach**: A persistent conversational chatbot assistant loaded with candidate profile context to deliver customized career coaching.
+
 ---
 
 ## 5. User Flows
@@ -58,6 +67,14 @@ The hiring ecosystem suffers from two primary issues:
 2. Drag-and-drop resume -> File parsed and analyzed.
 3. View ATS report: score gauge, structural logs, formatting issues, and skills list.
 4. Input JD in "JD Matcher" tab -> View semantic similarity score, matched skills, missing skills, and detailed advice on updating the resume.
+5. Access Career Platform Tabs:
+   - **Rewriter**: Select tone, request AI rewrite, view diffs, and save new versions.
+   - **Interview Prep**: Choose target role, practice QA session, and review AI STAR feedback.
+   - **Skill Gap**: Run analysis against target roles to identify missing competencies and training resources.
+   - **Roadmap**: Generate a visual career path with milestone timelines.
+   - **Tracker**: Log, edit, and move job application entries across lanes.
+   - **Job Match**: View ranked matches from recruiter job posts with compatibility scores.
+   - **Career Coach**: Chat with the conversational AI assistant loaded with resume context.
 
 ### Recruiter Flow
 1. Register/Login -> Select role "Recruiter" -> Recruiter Dashboard.
@@ -65,11 +82,14 @@ The hiring ecosystem suffers from two primary issues:
 3. Drag-and-drop 10+ resumes -> Backend processes files, computes embeddings, index in ChromaDB.
 4. View Ranked List -> Order by Cosine Similarity.
 5. Click Candidate name -> View detailed Candidate Summary (Skills, Experience years, education background, score).
+6. Click "Export" -> Generate and download a comprehensive CSV candidate list containing detailed profiles, extracted schools, start/end graduation years, and match scores.
 
 ---
 
 ## 6. Success Metrics (KPIs)
-- **Parser Accuracy**: >95% correct identification of contact information and core skills on standard formatting.
+- **Parser Accuracy**: >95% correct identification of contact information, schools, years, and core skills on standard formatting.
 - **Analysis Latency**: Scoring and explainability returned in under 3 seconds per resume.
 - **Candidate Matching Speed**: Under 10 seconds for batch-matching of 20 resumes.
+- **AI Response Latency**: Core LLM generations (coaching, rewriting, roadmap, etc.) returned in under 5 seconds.
 - **User Engagement**: Low friction navigation, clean dashboard visualization, and 90%+ intuitive scoring report comprehension.
+

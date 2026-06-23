@@ -90,3 +90,32 @@ npm run dev
 2. **DTO Pattern (Pydantic)**: Never pass raw ORM model entities to controllers. Always return valid Pydantic schemas.
 3. **No Direct Database Calls**: Enforce the Repository Pattern. All DB reads/writes must reside in files inside `backend/app/repositories/`.
 4. **Clean Git Commits**: Prepend commits with scope definitions, e.g., `feat(auth): add password strength checker` or `fix(parser): repair multi-column text extraction`.
+
+---
+
+## 5. Local Verification & Testing
+
+To ensure code stability and correct parsing rules before creating pull requests:
+
+### 5.1 CPU-only PyTorch Installation
+To save local disk space and avoid downloading 2.5 GB of GPU dependencies on your local machine, install the CPU-only version of PyTorch in your virtual environment:
+```bash
+pip install torch --index-url https://download.pytorch.org/whl/cpu
+pip install -r requirements.txt
+```
+
+### 5.2 Verification Scripts
+Run the diagnostic and validation tests locally or inside the backend docker container:
+1. **Parser & Rule Heuristics**:
+   Validate email stripping, school/certification routing, month discarding, name extraction, and start/end graduation years parsing:
+   ```bash
+   # Inside backend docker container
+   docker exec -it resumefriendly_backend python scratch/verify_parser.py
+   ```
+2. **Scorer & Embeddings Engine**:
+   Validate service layer imports, the 0-100 ATS category scoring, and the Sentence Transformer + ChromaDB matching functionality:
+   ```bash
+   # Inside backend docker container
+   docker exec -it resumefriendly_backend python scratch/verify_backend.py
+   ```
+

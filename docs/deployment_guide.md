@@ -31,6 +31,10 @@ CHROMADB_PORT=8000
 # Next.js Server config
 NEXT_PUBLIC_API_URL=http://localhost:8000
 PORT=3000
+
+# OpenRouter LLM settings (Phase 2)
+OPENROUTER_API_KEY=your_openrouter_api_key_here
+OPENROUTER_MODEL=openai/gpt-4o
 ```
 
 ---
@@ -53,6 +57,7 @@ RUN apt-get update && apt-get install -y \
 
 # Copy dependencies
 COPY requirements.txt .
+RUN pip install --no-cache-dir torch --index-url https://download.pytorch.org/whl/cpu
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Download local Sentence Transformers model to cache it during image build
@@ -146,6 +151,8 @@ services:
       - CHROMADB_HOST=chroma_db
       - CHROMADB_PORT=8000
       - UPLOAD_DIR=/workspace/uploads
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
+      - OPENROUTER_MODEL=${OPENROUTER_MODEL}
     volumes:
       - uploads_data:/workspace/uploads
     depends_on:

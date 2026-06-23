@@ -78,3 +78,46 @@ We enforce standard patterns to ensure clean, mockable logic:
   - Database sessions (`get_db`) are injected into repositories.
   - Repositories are injected into services.
   - Authentication tokens are parsed via an injected dependencies check (`get_current_user`), which validates claims, verifies signature, check roles, and automatically raises `401 Unauthorized` or `403 Forbidden` exceptions on failures.
+
+---
+
+## 4. Phase 2 Career Growth Services
+
+Phase 2 introduces pluggable AI and management logic built on a unified LLM interface:
+
+1. **LLM Provider Abstraction (`llm_provider.py`)**:
+   - Outlines an abstract base `LLMProvider` class defining the standard text generation signature: `generate(prompt, system_prompt, temperature, max_tokens, json_mode)`.
+   - Implements a concrete `OpenRouterProvider` utilizing the official `openai` Python SDK. It communicates with OpenRouter API using configured key and model variables (`OPENROUTER_API_KEY`, `OPENROUTER_MODEL`).
+   - Standardizes error logging, rate-limit retries, and formats JSON outputs via a helper factory `get_llm_provider()`.
+
+2. **Rewriter Service (`rewriter_service.py`)**:
+   - Employs the LLM to rewrite specific sections of parsed resumes. Accepts target roles, tones (Professional, Executive, Technical, Creative), and focus areas. Saves results as incremented versions in `ResumeVersion` tables.
+
+3. **Interview Service (`interview_service.py`)**:
+   - Dynamically constructs a list of technical, behavioral, and situational interview questions.
+   - Evaluates submitted answers on a 0-10 score scale. AI response formatting follows the **STAR method** (Situation, Task, Action, Result) structure.
+
+4. **Skill Gap Service (`skill_gap_service.py`)**:
+   - Cross-references parsed skills against typical industry requirements for a target role. Calculates a readiness index score, lists critical missing skills, and suggests targeted educational/learning guides.
+
+5. **Roadmap Service (`roadmap_service.py`)**:
+   - Maps milestone timelines (in months) for transitioning from a current role to a target career role, indicating concrete actions and certs required in each phase.
+
+6. **Tracker Service (`tracker_service.py`)**:
+   - Lightweight CRUD logic managing job applications. Aggregates statistical metrics on total applications in each status lane.
+
+7. **Job Match Service (`job_match_service.py`)**:
+   - Match candidate resumes against active recruiter-submitted JDs, reusing the vector matching capabilities of the existing matching service.
+
+8. **Coach Service (`coach_service.py`)**:
+   - Maintains messaging history to simulate a conversational career advisor, passing user resume context to guide all conversations.
+
+---
+
+## 5. Deployment Build Optimizations
+
+To avoid long deployment build delays due to large library dependencies:
+- **CPU-only PyTorch Setup**: The `backend/Dockerfile` pre-installs the CPU-only version of PyTorch (`torch --index-url https://download.pytorch.org/whl/cpu`) before installing the general `requirements.txt`.
+- **93% Build Size Reduction**: This configuration skips the heavy NVIDIA GPU CUDA packages (e.g., `nvidia-cublas`, `nvidia-cudnn`), shrinking the Docker image download volume from 2.5 GB to ~190 MB, ensuring fast deployment pipelines.
+- **Pre-baked Cache**: The `all-MiniLM-L6-v2` Sentence Transformer model is downloaded during the image build stage (`RUN python -c "..."`) to avoid latency on container startup.
+

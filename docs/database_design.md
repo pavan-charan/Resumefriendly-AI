@@ -71,6 +71,91 @@ erDiagram
         timestamp uploaded_at
     }
 
+    RESUME_VERSIONS {
+        uuid id PK
+        uuid resume_id FK "References RESUMES(id)"
+        uuid user_id FK "References USERS(id)"
+        integer version_number
+        jsonb original_content
+        jsonb rewritten_content
+        string target_role
+        string tone
+        jsonb focus_areas
+        timestamp created_at
+    }
+
+    INTERVIEW_SESSIONS {
+        uuid id PK
+        uuid user_id FK "References USERS(id)"
+        uuid resume_id FK "References RESUMES(id)"
+        string target_role
+        string difficulty
+        timestamp created_at
+    }
+
+    INTERVIEW_QUESTIONS {
+        uuid id PK
+        uuid session_id FK "References INTERVIEW_SESSIONS(id)"
+        string question_text
+        string category
+        string user_answer
+        jsonb ai_feedback
+        integer score
+        timestamp answered_at
+    }
+
+    SKILL_GAP_ANALYSES {
+        uuid id PK
+        uuid user_id FK "References USERS(id)"
+        uuid resume_id FK "References RESUMES(id)"
+        string target_role
+        jsonb analysis_result
+        timestamp created_at
+    }
+
+    CAREER_ROADMAPS {
+        uuid id PK
+        uuid user_id FK "References USERS(id)"
+        uuid resume_id FK "References RESUMES(id)"
+        string current_role
+        string target_role
+        integer timeline_months
+        jsonb roadmap_data
+        timestamp created_at
+    }
+
+    JOB_APPLICATIONS {
+        uuid id PK
+        uuid user_id FK "References USERS(id)"
+        string company_name
+        string job_title
+        string job_url
+        string status
+        date applied_date
+        string salary_range
+        string notes
+        date next_followup
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    COACH_CONVERSATIONS {
+        uuid id PK
+        uuid user_id FK "References USERS(id)"
+        uuid resume_id FK "References RESUMES(id)"
+        string title
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    COACH_MESSAGES {
+        uuid id PK
+        uuid conversation_id FK "References COACH_CONVERSATIONS(id)"
+        string role
+        string content
+        timestamp created_at
+    }
+
     USERS ||--o{ RESUMES : "uploads"
     USERS ||--o{ JOB_DESCRIPTIONS : "creates"
     USERS ||--o{ RECRUITER_UPLOADS : "batch_uploads"
@@ -79,6 +164,14 @@ erDiagram
     JOB_DESCRIPTIONS ||--o{ JD_MATCHES : "scores"
     JOB_DESCRIPTIONS ||--o{ RECRUITER_UPLOADS : "contains"
     RESUMES ||--o{ RECRUITER_UPLOADS : "uploaded_as"
+    RESUMES ||--o{ RESUME_VERSIONS : "versions"
+    USERS ||--o{ INTERVIEW_SESSIONS : "conducts"
+    INTERVIEW_SESSIONS ||--o{ INTERVIEW_QUESTIONS : "contains"
+    USERS ||--o{ SKILL_GAP_ANALYSES : "triggers"
+    USERS ||--o{ CAREER_ROADMAPS : "generates"
+    USERS ||--o{ JOB_APPLICATIONS : "tracks"
+    USERS ||--o{ COACH_CONVERSATIONS : "starts"
+    COACH_CONVERSATIONS ||--o{ COACH_MESSAGES : "sends"
 ```
 
 ---
@@ -148,6 +241,91 @@ Map of resumes uploaded by recruiters to screen against job specifications.
 - `resume_id`: `UUID` (Foreign Key -> `RESUMES(id)`)
 - `uploaded_at`: `TIMESTAMP WITH TIME ZONE` (default: `NOW()`)
 
+### 2.7 RESUME_VERSIONS
+Tracks rewrites, original vs rewritten segments, tone and focus selections.
+- `id`: `UUID` (Primary Key)
+- `resume_id`: `UUID` (Foreign Key -> `RESUMES(id)`, Cascade Delete)
+- `user_id`: `UUID` (Foreign Key -> `USERS(id)`, Cascade Delete)
+- `version_number`: `INTEGER` (Not Null)
+- `original_content`: `JSONB` (Not Null)
+- `rewritten_content`: `JSONB` (Not Null)
+- `target_role`: `VARCHAR(255)` (Not Null)
+- `tone`: `VARCHAR(50)` (Not Null)
+- `focus_areas`: `JSONB` (Not Null)
+- `created_at`: `TIMESTAMP WITH TIME ZONE` (default: `NOW()`)
+
+### 2.8 INTERVIEW_SESSIONS
+Mock interview session parameters and metadata.
+- `id`: `UUID` (Primary Key)
+- `user_id`: `UUID` (Foreign Key -> `USERS(id)`, Cascade Delete)
+- `resume_id`: `UUID` (Foreign Key -> `RESUMES(id)`, Cascade Delete)
+- `target_role`: `VARCHAR(255)` (Not Null)
+- `difficulty`: `VARCHAR(50)` (Not Null)
+- `created_at`: `TIMESTAMP WITH TIME ZONE` (default: `NOW()`)
+
+### 2.9 INTERVIEW_QUESTIONS
+Mock Q&A items, typed categories, answer submissions, and feedback ratings.
+- `id`: `UUID` (Primary Key)
+- `session_id`: `UUID` (Foreign Key -> `INTERVIEW_SESSIONS(id)`, Cascade Delete)
+- `question_text`: `TEXT` (Not Null)
+- `category`: `VARCHAR(100)` (Not Null)
+- `user_answer`: `TEXT` (Nullable)
+- `ai_feedback`: `JSONB` (Nullable - contains strengths, improvements, model STAR structure analysis)
+- `score`: `INTEGER` (Nullable)
+- `answered_at`: `TIMESTAMP WITH TIME ZONE` (Nullable)
+
+### 2.10 SKILL_GAP_ANALYSES
+Historic gap reports and suggested learning details.
+- `id`: `UUID` (Primary Key)
+- `user_id`: `UUID` (Foreign Key -> `USERS(id)`, Cascade Delete)
+- `resume_id`: `UUID` (Foreign Key -> `RESUMES(id)`, Cascade Delete)
+- `target_role`: `VARCHAR(255)` (Not Null)
+- `analysis_result`: `JSONB` (Not Null - missing skills list, proficiency ratings, course links)
+- `created_at`: `TIMESTAMP WITH TIME ZONE` (default: `NOW()`)
+
+### 2.11 CAREER_ROADMAPS
+Milestone paths, timeline progression schedules, and certification plans.
+- `id`: `UUID` (Primary Key)
+- `user_id`: `UUID` (Foreign Key -> `USERS(id)`, Cascade Delete)
+- `resume_id`: `UUID` (Foreign Key -> `RESUMES(id)`, Cascade Delete)
+- `current_role`: `VARCHAR(255)` (Not Null)
+- `target_role`: `VARCHAR(255)` (Not Null)
+- `timeline_months`: `INTEGER` (Not Null)
+- `roadmap_data`: `JSONB` (Not Null - milestone definitions, task items, timelines)
+- `created_at`: `TIMESTAMP WITH TIME ZONE` (default: `NOW()`)
+
+### 2.12 JOB_APPLICATIONS
+Standard job application tracking information.
+- `id`: `UUID` (Primary Key)
+- `user_id`: `UUID` (Foreign Key -> `USERS(id)`, Cascade Delete)
+- `company_name`: `VARCHAR(255)` (Not Null)
+- `job_title`: `VARCHAR(255)` (Not Null)
+- `job_url`: `VARCHAR(512)` (Nullable)
+- `status`: `VARCHAR(50)` (Not Null - applied, screening, interviewing, offer, rejected, accepted)
+- `applied_date`: `DATE` (Not Null)
+- `salary_range`: `VARCHAR(100)` (Nullable)
+- `notes`: `TEXT` (Nullable)
+- `next_followup`: `DATE` (Nullable)
+- `created_at`: `TIMESTAMP WITH TIME ZONE` (default: `NOW()`)
+- `updated_at`: `TIMESTAMP WITH TIME ZONE` (default: `NOW()`)
+
+### 2.13 COACH_CONVERSATIONS
+Discussion channels and session groups.
+- `id`: `UUID` (Primary Key)
+- `user_id`: `UUID` (Foreign Key -> `USERS(id)`, Cascade Delete)
+- `resume_id`: `UUID` (Foreign Key -> `RESUMES(id)`, Cascade Delete)
+- `title`: `VARCHAR(255)` (Not Null)
+- `created_at`: `TIMESTAMP WITH TIME ZONE` (default: `NOW()`)
+- `updated_at`: `TIMESTAMP WITH TIME ZONE` (default: `NOW()`)
+
+### 2.14 COACH_MESSAGES
+Detailed chat thread transcripts.
+- `id`: `UUID` (Primary Key)
+- `conversation_id`: `UUID` (Foreign Key -> `COACH_CONVERSATIONS(id)`, Cascade Delete)
+- `role`: `VARCHAR(50)` (Not Null - user, assistant)
+- `content`: `TEXT` (Not Null)
+- `created_at`: `TIMESTAMP WITH TIME ZONE` (default: `NOW()`)
+
 ---
 
 ## 3. Indexing & Optimization Strategy
@@ -160,6 +338,11 @@ To maintain sub-second queries for active dashboards as files and users scale, w
    - `idx_jds_creator_id` ON `job_descriptions(creator_id)`: Speeds up dashboard listings for active recruiters.
    - `idx_jd_matches_lookup` ON `jd_matches(resume_id, jd_id)`: Quick evaluation of historic evaluations.
    - `idx_rec_upload_lookup` ON `recruiter_uploads(recruiter_id, jd_id)`: Quickly lists resumes queued for a job description.
+   - `idx_resume_versions_lookup` ON `resume_versions(resume_id, version_number)`: Instant lookup for rewriter histories.
+   - `idx_interview_questions_session` ON `interview_questions(session_id)`: Quick retrieval of chat/interview Q&As.
+   - `idx_job_applications_user` ON `job_applications(user_id, status)`: Optimization for candidate Kanban tracker pipelines.
+   - `idx_coach_messages_convo` ON `coach_messages(conversation_id, created_at)`: Speed up active chat scroll loading.
 
 2. **JSONB Indexing**:
    - `idx_resumes_skills` ON `resumes USING gin ((parsed_content -> 'skills'))`: Speeds up custom recruiter searches filtering resumes by exact skill tags.
+

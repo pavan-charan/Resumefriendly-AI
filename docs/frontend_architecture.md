@@ -69,6 +69,42 @@ To maximize reliability and ensure low-latency responsiveness, state management 
   - `AuthContext`: Tracks current JWT token, session status, user role, and credentials.
 - **Client Hooks**:
   - Data queries and mutations use simple wrappers around standard React lifecycle elements (`useState`, `useEffect`) and axios integrations, keeping state local to the feature components (e.g., candidate matches inside the candidate module) to avoid global store bloat.
-- **Session Cache**:
+- Session Cache:
   - Access tokens are cached in memory.
   - Refresh tokens are stored securely in cookies or `localStorage` to keep the user signed in across page reloads.
+
+---
+
+## 5. Phase 2 Candidate Dashboard Tabs & Interfaces
+
+The Candidate Workspace Dashboard is organized as an interactive multi-tab component layout (using radix-ui tabs or equivalent React components), incorporating:
+
+1. **AI Resume Rewriter Tab**:
+   - Selector panel for target job role and tone parameter (Professional, Technical, Executive, Creative).
+   - Side-by-side text diff screen displaying original resume sections alongside AI-rewritten bullet points.
+   - Version history list letting candidates retrieve past saved iterations.
+
+2. **Interview Prep Tab**:
+   - Mock interview configuration panel (difficulty selector, questions count, role spec).
+   - Card interface rendering individual question inputs.
+   - AI STAR Method Feedback display indicating specific score values (0-10), strengths, and step-by-step suggestions.
+
+3. **Skill Gap Tab**:
+   - Readiness gauge/radar chart indicating estimated target role compatibility.
+   - Comparative skill list table identifying core missing skills, priority level tags, and associated educational resources.
+
+4. **Career Roadmap Tab**:
+   - Interactive milestones timeline detailing target objectives, action plans, and suggested timeline milestones (in months).
+
+5. **Application Tracker Tab**:
+   - Kanban-board pipeline tracker displaying current applications in status cards (Applied, Screening, Interviewing, Offer, Rejected, Accepted).
+   - Modal forms supporting add/edit details, salary parameters, follow-up dates, and recruiter notes.
+
+6. **Job Match Tab**:
+   - Job search listing indicating similarity scores against the candidate's active resume, matched skills, and recommendations.
+
+7. **AI Career Coach Tab**:
+   - Scrollable chat message bubble timeline with streaming message blocks.
+   - Context panel referencing the candidate's active parsed resume.
+   - Thread list enabling the candidate to manage multiple historic coaching discussions.
+

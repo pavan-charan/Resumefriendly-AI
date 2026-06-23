@@ -16,6 +16,14 @@ def start_conversation(
     current_user: User = Depends(get_current_user),
 ):
     """Start a new coaching conversation."""
+    if request.resume_id:
+        from app.models.resume import Resume
+        resume = db.query(Resume).filter(Resume.id == request.resume_id).first()
+        if not resume:
+            raise HTTPException(status_code=404, detail="Resume not found")
+        if resume.user_id != current_user.id and current_user.role != "ADMIN":
+            raise HTTPException(status_code=403, detail="You do not have permission to start a conversation for this resume")
+
     service = CoachService(db)
     return service.start_conversation(
         user_id=str(current_user.id),

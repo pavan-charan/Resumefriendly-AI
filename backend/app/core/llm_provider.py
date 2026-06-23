@@ -88,7 +88,7 @@ class LLMProvider:
                     return json.loads(match.group())
                 except json.JSONDecodeError:
                     pass
-            return {"error": "Failed to parse LLM response", "raw": raw[:500]}
+            raise ValueError(f"Failed to parse LLM JSON response: {raw[:500]}")
     
     def chat(
         self,
